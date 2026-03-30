@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>牧场养鸡大亨</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- 注册界面 -->
+        <div id="registration-screen" class="screen">
+            <div class="registration-container">
+                <h1 id="game-title" class="game-title">🐔 牧场养鸡大亨</h1>
+                <div class="click-counter hidden" id="click-counter">
+                    <span id="click-progress">0</span>/30
+                </div>
+                <div class="avatar-selection">
+                    <label class="avatar-label">选择你的头像：</label>
+                    <div class="avatar-preview" id="avatar-preview">
+                        <span class="avatar-placeholder">👤</span>
+                    </div>
+                    <div class="avatar-grid" id="avatar-grid">
+                        <div class="avatar-option" data-avatar="🐔" title="小鸡">🐔</div>
+                        <div class="avatar-option" data-avatar="🐥" title="小鸡仔">🐥</div>
+                        <div class="avatar-option" data-avatar="🐤" title="小黄鸡">🐤</div>
+                        <div class="avatar-option" data-avatar="🦆" title="小鸭">🦆</div>
+                        <div class="avatar-option" data-avatar="🐰" title="小兔">🐰</div>
+                        <div class="avatar-option" data-avatar="🐷" title="小猪">🐷</div>
+                        <div class="avatar-option" data-avatar="🐑" title="小羊">🐑</div>
+                        <div class="avatar-option" data-avatar="🐴" title="小马">🐴</div>
+                        <div class="avatar-option" data-avatar="🐮" title="小牛">🐮</div>
+                        <div class="avatar-option" data-avatar="🐶" title="小狗">🐶</div>
+                    </div>
+                </div>
+                <div class="nickname-input">
+                    <label for="nickname">请输入昵称：</label>
+                    <input type="text" id="nickname" placeholder="输入你的昵称" maxlength="20">
+                </div>
+                <button id="start-game-btn" class="btn-primary">开始游戏</button>
+                <div style="margin-top: 20px;">
+                    <button id="generate-codes-btn" class="btn-secondary hidden" style="font-size: 14px; padding: 10px 20px;">
+                        📝 生成1000条验证码
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏主界面 -->
+        <div id="game-screen" class="screen hidden">
+            <!-- 左上角状态显示 -->
+            <div class="status-panel">
+                <div class="user-info">
+                    <img id="user-avatar" src="" alt="头像" class="avatar-small">
+                    <span id="user-name" class="username"></span>
+                </div>
+                <div class="stats">
+                    <div class="stat-item">
+                        <span class="stat-label">牧场等级：</span>
+                        <span id="ranch-level" class="stat-value">1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">牧场评级：</span>
+                        <span id="ranch-rating" class="stat-value rating">破鸡笼</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">金币：</span>
+                        <span id="gold" class="stat-value gold">10000</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">饲料（斤）：</span>
+                        <span id="feed" class="stat-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">鸡的数量：</span>
+                        <span id="chicken-count" class="stat-value">1</span>
+                        <span class="capacity">/<span id="chicken-capacity">5</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">鸡蛋数量：</span>
+                        <span id="egg-count" class="stat-value">0</span>
+                        <span class="capacity">/<span id="egg-capacity">100</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右上角资源显示 -->
+            <div class="resource-panel">
+                <div class="resource-item">
+                    <span class="resource-icon">🌾</span>
+                    <span id="feed-display" class="resource-value">0</span>
+                    <span class="resource-unit">斤</span>
+                </div>
+            </div>
+
+            <!-- 右上角注销按钮 -->
+            <div class="logout-panel">
+                <button id="logout-btn" class="logout-btn">🚪 注销</button>
+            </div>
+
+            <!-- 牧场主区域 -->
+            <div class="ranch-container">
+                <!-- 鸡笼区域 -->
+                <div class="coop-section" id="coop">
+                    <div class="coop-structure" id="coop-structure">
+                        <div class="coop-roof"></div>
+                        <div class="coop-body">
+                            <div class="coop-door"></div>
+                            <div class="coop-window"></div>
+                        </div>
+                        <div class="coop-base"></div>
+                    </div>
+                    <div class="click-hint">点击鸡舍手动孵化</div>
+                </div>
+
+                <!-- 开放牧场区域 -->
+                <div class="pasture-section" id="pasture">
+                    <div class="grass-field">
+                        <div id="chickens-container"></div>
+                    </div>
+                    <div class="environment-details" id="environment"></div>
+                </div>
+            </div>
+
+            <!-- 底部操作按钮 -->
+            <div class="action-panel">
+                <button class="action-btn" id="buy-chicken-btn">
+                    <span class="btn-icon">🐔</span>
+                    <span class="btn-text">买鸡</span>
+                    <span class="btn-price">10,000金币</span>
+                </button>
+                <button class="action-btn" id="buy-feed-btn">
+                    <span class="btn-icon">🌾</span>
+                    <span class="btn-text">买饲料</span>
+                    <span class="btn-price">10金币/斤</span>
+                </button>
+                <button class="action-btn" id="sell-chicken-btn">
+                    <span class="btn-icon">💰</span>
+                    <span class="btn-text">卖鸡</span>
+                    <span class="btn-price">1,000金币</span>
+                </button>
+                <button class="action-btn" id="sell-egg-btn">
+                    <span class="btn-icon">🥚</span>
+                    <span class="btn-text">卖鸡蛋</span>
+                    <span class="btn-price">100金币</span>
+                </button>
+                <button class="action-btn upgrade-btn" id="upgrade-ranch-btn">
+                    <span class="btn-icon">⭐</span>
+                    <span class="btn-text">升级牧场</span>
+                    <span class="btn-price" id="upgrade-cost">300金币</span>
+                </button>
+                <button class="action-btn scan-btn" id="scan-qr-btn">
+                    <span class="btn-icon">📱</span>
+                    <span class="btn-text">扫码</span>
+                    <span class="btn-price">领鸡蛋</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 交易弹窗 -->
+        <div id="trade-modal" class="modal hidden">
+            <div class="modal-content">
+                <h3 id="modal-title">购买</h3>
+                <div class="slider-container">
+                    <label for="quantity-slider">数量：</label>
+                    <input type="range" id="quantity-slider" min="1" max="100" value="1">
+                    <span id="quantity-value">1</span>
+                </div>
+                <div class="total-cost">
+                    <span>总价：</span>
+                    <span id="total-cost">0</span>
+                    <span>金币</span>
+                </div>
+                <div class="modal-buttons">
+                    <button id="confirm-btn" class="btn-primary">确认</button>
+                    <button id="cancel-btn" class="btn-secondary">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 扫码弹窗 -->
+        <div id="scan-modal" class="modal hidden">
+            <div class="modal-content scan-modal-content">
+                <h3>📱 扫码领鸡蛋</h3>
+                <p class="scan-desc">扫描二维码，获取6位数字验证码，领取100个鸡蛋！</p>
+                
+                <div class="scan-options">
+                    <button id="camera-scan-btn" class="btn-primary scan-option-btn">
+                        <span>📷</span> 摄像头扫描
+                    </button>
+                    <button id="file-scan-btn" class="btn-secondary scan-option-btn">
+                        <span>🖼️</span> 选择图片
+                    </button>
+                    <button id="manual-input-btn" class="btn-secondary scan-option-btn manual-input-btn">
+                        <span>⌨️</span> 手动输入
+                    </button>
+                </div>
+                
+                <div id="camera-container" class="camera-container hidden">
+                    <video id="camera-video" autoplay playsinline></video>
+                    <canvas id="camera-canvas" class="hidden"></canvas>
+                    <div class="scan-overlay">
+                        <div class="scan-frame"></div>
+                        <p class="scan-hint">将二维码对准框内</p>
+                    </div>
+                    <button id="stop-camera-btn" class="btn-secondary">关闭摄像头</button>
+                </div>
+                
+                <div id="file-container" class="file-container hidden">
+                    <input type="file" id="qr-file-input" accept="image/*">
+                    <div id="file-preview" class="file-preview"></div>
+                </div>
+                
+                <div id="manual-input-container" class="manual-input-container hidden">
+                    <div class="input-hint">
+                        <p>请输入6位数字验证码</p>
+                        <span class="input-example">例如：123456</span>
+                    </div>
+                    <div class="code-input-wrapper">
+                        <input type="text" id="manual-code-input" class="manual-code-input" 
+                               maxlength="6" placeholder="______" autocomplete="off">
+                    </div>
+                    <div id="input-error" class="input-error hidden"></div>
+                    <div class="manual-input-buttons">
+                        <button id="confirm-manual-btn" class="btn-primary">确认领取</button>
+                        <button id="cancel-manual-btn" class="btn-secondary">返回</button>
+                    </div>
+                </div>
+                
+                <div id="scan-result" class="scan-result hidden">
+                    <p>识别结果：<span id="scan-code"></span></p>
+                    <div class="scan-buttons">
+                        <button id="verify-btn" class="btn-primary">验证领取</button>
+                        <button id="rescan-btn" class="btn-secondary">重新扫描</button>
+                    </div>
+                </div>
+                
+                <div id="scan-loading" class="scan-loading hidden">
+                    <div class="loading-spinner"></div>
+                    <p>正在验证...</p>
+                </div>
+                
+                <button id="close-scan-btn" class="btn-secondary close-scan-btn">关闭</button>
+            </div>
+        </div>
+
+        <!-- 注销确认弹窗 -->
+        <div id="logout-modal" class="modal hidden">
+            <div class="modal-content logout-modal-content">
+                <h3>⚠️ 注销账号</h3>
+                <p class="logout-warning">此操作将清除所有游戏数据，请谨慎操作！</p>
+                
+                <div class="logout-password-container">
+                    <label for="logout-password">请输入口令：</label>
+                    <input type="password" id="logout-password" placeholder="输入口令" autocomplete="off">
+                </div>
+                
+                <div id="logout-error" class="input-error hidden"></div>
+                
+                <div class="modal-buttons">
+                    <button id="confirm-logout-btn" class="btn-primary danger-btn">确认注销</button>
+                    <button id="cancel-logout-btn" class="btn-secondary">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 提示消息 -->
+        <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

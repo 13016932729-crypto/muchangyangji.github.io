@@ -1,0 +1,1408 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.screen {
+    min-height: 100vh;
+    width: 100%;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* 注册界面样式 */
+.registration-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.registration-container h1 {
+    font-size: 2.5rem;
+    color: white;
+    margin-bottom: 10px;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* 游戏标题 - 可点击 */
+.game-title {
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.game-title:hover {
+    transform: scale(1.02);
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.4);
+}
+
+.game-title:active {
+    transform: scale(0.98);
+}
+
+.game-title.clicking {
+    animation: titleClick 0.3s ease;
+}
+
+@keyframes titleClick {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+}
+
+/* 点击计数器 */
+.click-counter {
+    background: rgba(255,255,255,0.2);
+    padding: 5px 15px;
+    border-radius: 20px;
+    color: white;
+    font-size: 14px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.click-counter.show {
+    animation: counterPulse 0.3s ease;
+}
+
+.click-counter.complete {
+    background: linear-gradient(135deg, #4CAF50, #45a049);
+    animation: counterComplete 0.5s ease;
+}
+
+@keyframes counterPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes counterComplete {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.2); }
+    50% { transform: scale(0.9); }
+    75% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* 头像选择区域 */
+.avatar-selection {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.avatar-label {
+    color: white;
+    font-size: 16px;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.avatar-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.9);
+    border: 4px solid white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.avatar-preview.has-avatar {
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    animation: avatarSelected 0.5s ease;
+}
+
+@keyframes avatarSelected {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.avatar-placeholder {
+    font-size: 50px;
+    opacity: 0.5;
+}
+
+.avatar-preview .selected-avatar {
+    font-size: 70px;
+    animation: avatarBounce 0.5s ease;
+}
+
+@keyframes avatarBounce {
+    0% { transform: scale(0) rotate(-180deg); }
+    50% { transform: scale(1.2) rotate(0deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
+/* 头像网格 */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+    max-width: 320px;
+}
+
+.avatar-option {
+    width: 55px;
+    height: 55px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.avatar-option:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    border-color: #667eea;
+    background: white;
+}
+
+.avatar-option.selected {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-color: white;
+    transform: scale(1.15);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+    animation: selectedPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes selectedPulse {
+    0%, 100% { box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5); }
+    50% { box-shadow: 0 8px 35px rgba(102, 126, 234, 0.8); }
+}
+
+/* 生成验证码按钮显示动画 */
+#generate-codes-btn {
+    transition: all 0.5s ease;
+    opacity: 0;
+    transform: translateY(-20px);
+}
+
+#generate-codes-btn:not(.hidden) {
+    opacity: 1;
+    transform: translateY(0);
+    animation: slideDown 0.5s ease;
+}
+
+@keyframes slideDown {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nickname-input {
+    margin-bottom: 30px;
+    width: 100%;
+    max-width: 300px;
+}
+
+.nickname-input label {
+    display: block;
+    color: white;
+    margin-bottom: 10px;
+    font-size: 16px;
+}
+
+.nickname-input input {
+    width: 100%;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    font-size: 16px;
+    background: rgba(255,255,255,0.9);
+    outline: none;
+}
+
+.btn-primary {
+    padding: 15px 40px;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+.btn-secondary {
+    padding: 12px 30px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    border: 2px solid white;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* 游戏主界面样式 */
+#game-screen {
+    position: relative;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #87CEEB 0%, #98FB98 100%);
+}
+
+/* 状态面板 */
+.status-panel {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background: rgba(255,255,255,0.95);
+    padding: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 100;
+    min-width: 200px;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+}
+
+.avatar-small {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 10px;
+    border: 2px solid #667eea;
+}
+
+.username {
+    font-weight: bold;
+    color: #333;
+    font-size: 16px;
+}
+
+.stats {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 14px;
+}
+
+.stat-value {
+    font-weight: bold;
+    color: #333;
+    font-size: 14px;
+}
+
+.stat-value.gold {
+    color: #FFD700;
+}
+
+.stat-value.rating {
+    color: #667eea;
+}
+
+.capacity {
+    color: #999;
+    font-size: 12px;
+}
+
+/* 资源面板 */
+.resource-panel {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(255,255,255,0.95);
+    padding: 15px 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    z-index: 100;
+}
+
+.resource-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.resource-icon {
+    font-size: 24px;
+}
+
+.resource-value {
+    font-weight: bold;
+    font-size: 18px;
+    color: #333;
+}
+
+.resource-unit {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 牧场容器 */
+.ranch-container {
+    padding: 120px 20px 150px;
+    min-height: 100vh;
+}
+
+/* 鸡笼区域 */
+.coop-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.coop-structure {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.coop-structure:hover {
+    transform: scale(1.02);
+}
+
+/* 破鸡笼样式 (等级1-9) */
+.coop-structure.level-1 .coop-roof {
+    width: 120px;
+    height: 60px;
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    position: relative;
+}
+
+.coop-structure.level-1 .coop-body {
+    width: 100px;
+    height: 80px;
+    background: linear-gradient(135deg, #D2691E 0%, #CD853F 100%);
+    margin: 0 auto;
+    position: relative;
+    border: 3px solid #8B4513;
+}
+
+.coop-structure.level-1 .coop-door {
+    width: 30px;
+    height: 40px;
+    background: #654321;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 15px 15px 0 0;
+}
+
+.coop-structure.level-1 .coop-window {
+    width: 20px;
+    height: 20px;
+    background: #87CEEB;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    border: 2px solid #654321;
+}
+
+.coop-structure.level-1 .coop-base {
+    width: 120px;
+    height: 10px;
+    background: #8B4513;
+    margin: 0 auto;
+}
+
+/* 简陋鸡棚样式 (等级10-19) */
+.coop-structure.level-2 .coop-roof {
+    width: 140px;
+    height: 70px;
+    background: linear-gradient(135deg, #696969 0%, #808080 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-2 .coop-body {
+    width: 120px;
+    height: 90px;
+    background: linear-gradient(135deg, #D3D3D3 0%, #C0C0C0 100%);
+    margin: 0 auto;
+    border: 3px solid #696969;
+}
+
+.coop-structure.level-2 .coop-door {
+    width: 35px;
+    height: 45px;
+    background: #696969;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 17px 17px 0 0;
+}
+
+.coop-structure.level-2 .coop-base {
+    width: 140px;
+    height: 12px;
+    background: #696969;
+    margin: 0 auto;
+}
+
+/* 木屋鸡舍样式 (等级20-29) */
+.coop-structure.level-3 .coop-roof {
+    width: 160px;
+    height: 80px;
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-3 .coop-body {
+    width: 140px;
+    height: 100px;
+    background: linear-gradient(135deg, #DEB887 0%, #D2B48C 100%);
+    margin: 0 auto;
+    border: 3px solid #8B4513;
+}
+
+.coop-structure.level-3 .coop-base {
+    width: 160px;
+    height: 15px;
+    background: #8B4513;
+    margin: 0 auto;
+}
+
+/* 玄铁鸡舍样式 (等级30-39) */
+.coop-structure.level-4 .coop-roof {
+    width: 180px;
+    height: 90px;
+    background: linear-gradient(135deg, #2F4F4F 0%, #36454F 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-4 .coop-body {
+    width: 160px;
+    height: 110px;
+    background: linear-gradient(135deg, #708090 0%, #778899 100%);
+    margin: 0 auto;
+    border: 3px solid #2F4F4F;
+}
+
+.coop-structure.level-4 .coop-base {
+    width: 180px;
+    height: 15px;
+    background: #2F4F4F;
+    margin: 0 auto;
+}
+
+/* 青铜养鸡场样式 (等级40-49) */
+.coop-structure.level-5 .coop-roof {
+    width: 200px;
+    height: 100px;
+    background: linear-gradient(135deg, #CD7F32 0%, #D2691E 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-5 .coop-body {
+    width: 180px;
+    height: 120px;
+    background: linear-gradient(135deg, #F4A460 0%, #DEB887 100%);
+    margin: 0 auto;
+    border: 3px solid #CD7F32;
+}
+
+.coop-structure.level-5 .coop-base {
+    width: 200px;
+    height: 18px;
+    background: #CD7F32;
+    margin: 0 auto;
+}
+
+/* 白银养鸡场样式 (等级50-59) */
+.coop-structure.level-6 .coop-roof {
+    width: 220px;
+    height: 110px;
+    background: linear-gradient(135deg, #C0C0C0 0%, #D3D3D3 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-6 .coop-body {
+    width: 200px;
+    height: 130px;
+    background: linear-gradient(135deg, #E8E8E8 0%, #F5F5F5 100%);
+    margin: 0 auto;
+    border: 3px solid #C0C0C0;
+}
+
+.coop-structure.level-6 .coop-base {
+    width: 220px;
+    height: 18px;
+    background: #C0C0C0;
+    margin: 0 auto;
+}
+
+/* 黄金牧场样式 (等级60-69) */
+.coop-structure.level-7 .coop-roof {
+    width: 240px;
+    height: 120px;
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-7 .coop-body {
+    width: 220px;
+    height: 140px;
+    background: linear-gradient(135deg, #FFF8DC 0%, #FFFACD 100%);
+    margin: 0 auto;
+    border: 3px solid #FFD700;
+}
+
+.coop-structure.level-7 .coop-base {
+    width: 240px;
+    height: 20px;
+    background: #FFD700;
+    margin: 0 auto;
+}
+
+/* 黑金牧场样式 (等级70-79) */
+.coop-structure.level-8 .coop-roof {
+    width: 260px;
+    height: 130px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-8 .coop-body {
+    width: 240px;
+    height: 150px;
+    background: linear-gradient(135deg, #0f3460 0%, #533483 100%);
+    margin: 0 auto;
+    border: 3px solid #1a1a2e;
+}
+
+.coop-structure.level-8 .coop-base {
+    width: 260px;
+    height: 20px;
+    background: #1a1a2e;
+    margin: 0 auto;
+}
+
+/* 钻石牧场样式 (等级80-89) */
+.coop-structure.level-9 .coop-roof {
+    width: 280px;
+    height: 140px;
+    background: linear-gradient(135deg, #00CED1 0%, #48D1CC 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-9 .coop-body {
+    width: 260px;
+    height: 160px;
+    background: linear-gradient(135deg, #E0FFFF 0%, #AFEEEE 100%);
+    margin: 0 auto;
+    border: 3px solid #00CED1;
+}
+
+.coop-structure.level-9 .coop-base {
+    width: 280px;
+    height: 22px;
+    background: #00CED1;
+    margin: 0 auto;
+}
+
+/* 星耀牧场样式 (等级90-99) */
+.coop-structure.level-10 .coop-roof {
+    width: 300px;
+    height: 150px;
+    background: linear-gradient(135deg, #9370DB 0%, #8A2BE2 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.coop-structure.level-10 .coop-body {
+    width: 280px;
+    height: 170px;
+    background: linear-gradient(135deg, #E6E6FA 0%, #DDA0DD 100%);
+    margin: 0 auto;
+    border: 3px solid #9370DB;
+}
+
+.coop-structure.level-10 .coop-base {
+    width: 300px;
+    height: 22px;
+    background: #9370DB;
+    margin: 0 auto;
+}
+
+/* 最NB牧场样式 (等级100) */
+.coop-structure.level-11 .coop-roof {
+    width: 320px;
+    height: 160px;
+    background: linear-gradient(135deg, #FF1493 0%, #FF69B4 50%, #FFB6C1 100%);
+    clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+    animation: rainbow 3s ease-in-out infinite;
+}
+
+.coop-structure.level-11 .coop-body {
+    width: 300px;
+    height: 180px;
+    background: linear-gradient(135deg, #FFF0F5 0%, #FFE4E1 50%, #FFF8DC 100%);
+    margin: 0 auto;
+    border: 4px solid #FF1493;
+    animation: glow 2s ease-in-out infinite;
+}
+
+.coop-structure.level-11 .coop-base {
+    width: 320px;
+    height: 25px;
+    background: linear-gradient(90deg, #FF1493, #FF69B4, #FFB6C1, #FF69B4, #FF1493);
+    margin: 0 auto;
+    animation: rainbow 3s ease-in-out infinite;
+}
+
+@keyframes rainbow {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50% { filter: hue-rotate(30deg); }
+}
+
+@keyframes glow {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 20, 147, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(255, 20, 147, 0.8); }
+}
+
+.click-hint {
+    margin-top: 10px;
+    color: #666;
+    font-size: 12px;
+    background: rgba(255,255,255,0.8);
+    padding: 5px 15px;
+    border-radius: 15px;
+}
+
+/* 牧场区域 */
+.pasture-section {
+    background: linear-gradient(180deg, #90EE90 0%, #98FB98 100%);
+    border-radius: 20px;
+    padding: 20px;
+    min-height: 300px;
+    position: relative;
+    overflow: hidden;
+}
+
+.grass-field {
+    position: relative;
+    min-height: 250px;
+}
+
+/* 鸡的样式 */
+.chicken {
+    position: absolute;
+    font-size: 30px;
+    animation: walk 3s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.chicken:hover {
+    transform: scale(1.2);
+}
+
+@keyframes walk {
+    0%, 100% { transform: translateX(0) translateY(0); }
+    25% { transform: translateX(20px) translateY(-5px); }
+    50% { transform: translateX(40px) translateY(0); }
+    75% { transform: translateX(20px) translateY(-5px); }
+}
+
+.chicken.pecking {
+    animation: peck 0.5s ease-in-out;
+}
+
+@keyframes peck {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(45deg); }
+}
+
+/* 环境装饰 */
+.environment-details {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 24px;
+}
+
+/* 操作面板 */
+.action-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(255,255,255,0.98);
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+    z-index: 100;
+}
+
+.action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.action-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+}
+
+.action-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-icon {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.btn-text {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.btn-price {
+    font-size: 10px;
+    opacity: 0.9;
+    margin-top: 3px;
+}
+
+.upgrade-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.scan-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(79, 172, 254, 0.7); }
+    50% { box-shadow: 0 0 0 10px rgba(79, 172, 254, 0); }
+}
+
+/* 弹窗样式 */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    min-width: 300px;
+    text-align: center;
+    animation: modalSlide 0.3s ease;
+}
+
+@keyframes modalSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.slider-container {
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.slider-container input[type="range"] {
+    width: 150px;
+}
+
+#quantity-value {
+    font-weight: bold;
+    color: #667eea;
+    min-width: 30px;
+}
+
+.total-cost {
+    margin: 20px 0;
+    font-size: 18px;
+}
+
+#total-cost {
+    font-weight: bold;
+    color: #f5576c;
+    font-size: 24px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* 提示消息 */
+.toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 16px;
+    z-index: 2000;
+    animation: fadeInOut 2s ease;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .status-panel {
+        position: relative;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        margin-bottom: 20px;
+    }
+
+    .resource-panel {
+        position: relative;
+        top: auto;
+        right: auto;
+        margin: 10px;
+    }
+
+    .ranch-container {
+        padding-top: 20px;
+    }
+
+    .action-panel {
+        padding: 10px;
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 8px 10px;
+        min-width: 65px;
+    }
+
+    .btn-icon {
+        font-size: 20px;
+    }
+
+    .btn-text {
+        font-size: 10px;
+    }
+
+    .btn-price {
+        font-size: 9px;
+    }
+
+    /* 注册界面移动端适配 */
+    .registration-container h1 {
+        font-size: 1.8rem;
+    }
+
+    .avatar-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 8px;
+        max-width: 280px;
+    }
+
+    .avatar-option {
+        width: 45px;
+        height: 45px;
+        font-size: 24px;
+    }
+
+    .avatar-preview {
+        width: 100px;
+        height: 100px;
+    }
+
+    .avatar-preview .selected-avatar {
+        font-size: 55px;
+    }
+
+    .avatar-placeholder {
+        font-size: 40px;
+    }
+
+    .click-counter {
+        font-size: 12px;
+        padding: 4px 12px;
+    }
+}
+
+/* 手动孵化进度条 */
+.hatch-progress {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.95);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 1500;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+.hatch-progress-bar {
+    width: 200px;
+    height: 20px;
+    background: #eee;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 10px 0;
+}
+
+.hatch-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    transition: width 0.1s ease;
+}
+
+/* 扫码弹窗样式 */
+.scan-modal-content {
+    max-width: 400px;
+    width: 90%;
+}
+
+.scan-desc {
+    color: #666;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.scan-options {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.scan-option-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 25px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.scan-option-btn span {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.camera-container {
+    position: relative;
+    margin: 20px 0;
+}
+
+#camera-video {
+    width: 100%;
+    max-width: 300px;
+    border-radius: 10px;
+}
+
+.scan-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.scan-frame {
+    width: 200px;
+    height: 200px;
+    border: 3px solid #4facfe;
+    border-radius: 10px;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    animation: scanFrame 2s ease-in-out infinite;
+}
+
+@keyframes scanFrame {
+    0%, 100% { border-color: #4facfe; }
+    50% { border-color: #00f2fe; }
+}
+
+.scan-hint {
+    color: white;
+    margin-top: 10px;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+}
+
+.file-container {
+    margin: 20px 0;
+}
+
+#qr-file-input {
+    margin-bottom: 10px;
+}
+
+.file-preview {
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.file-preview img {
+    max-width: 100%;
+    border-radius: 10px;
+}
+
+.scan-result {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f5f5f5;
+    border-radius: 10px;
+}
+
+#scan-code {
+    font-weight: bold;
+    color: #4facfe;
+    font-size: 20px;
+}
+
+.scan-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.scan-loading {
+    margin: 20px 0;
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #eee;
+    border-top-color: #4facfe;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 10px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.close-scan-btn {
+    margin-top: 15px;
+}
+
+/* 响应式扫码样式 */
+@media (max-width: 768px) {
+    .scan-options {
+        flex-direction: column;
+    }
+    
+    .scan-option-btn {
+        width: 100%;
+    }
+    
+    .scan-frame {
+        width: 150px;
+        height: 150px;
+    }
+}
+
+/* 手动输入样式 */
+.manual-input-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 100%);
+    border-radius: 15px;
+    border: 2px dashed #4facfe;
+}
+
+.input-hint {
+    margin-bottom: 20px;
+}
+
+.input-hint p {
+    font-size: 16px;
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.input-example {
+    font-size: 13px;
+    color: #888;
+    background: #fff;
+    padding: 3px 10px;
+    border-radius: 10px;
+}
+
+.code-input-wrapper {
+    margin: 20px 0;
+}
+
+.manual-code-input {
+    width: 200px;
+    height: 60px;
+    font-size: 32px;
+    text-align: center;
+    letter-spacing: 8px;
+    border: 3px solid #ddd;
+    border-radius: 10px;
+    outline: none;
+    transition: all 0.3s ease;
+    background: white;
+    color: #333;
+    font-family: 'Courier New', monospace;
+}
+
+.manual-code-input:focus {
+    border-color: #4facfe;
+    box-shadow: 0 0 15px rgba(79, 172, 254, 0.3);
+}
+
+.manual-code-input.valid {
+    border-color: #4CAF50;
+    background: #f1f8f4;
+}
+
+.manual-code-input.invalid {
+    border-color: #f44336;
+    background: #fef1f0;
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.input-error {
+    color: #f44336;
+    font-size: 14px;
+    margin: 10px 0;
+    padding: 8px 15px;
+    background: #fef1f0;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.manual-input-buttons {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.manual-input-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.manual-input-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* 响应式手动输入样式 */
+@media (max-width: 768px) {
+    .manual-code-input {
+        width: 180px;
+        height: 50px;
+        font-size: 28px;
+        letter-spacing: 6px;
+    }
+    
+    .manual-input-buttons {
+        flex-direction: column;
+    }
+    
+    .manual-input-buttons button {
+        width: 100%;
+    }
+}
+
+/* 注销面板 */
+.logout-panel {
+    position: fixed;
+    top: 20px;
+    right: 200px;
+    z-index: 100;
+}
+
+.logout-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(238, 90, 111, 0.3);
+}
+
+.logout-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(238, 90, 111, 0.4);
+}
+
+/* 注销弹窗 */
+.logout-modal-content {
+    border: 3px solid #ee5a6f;
+}
+
+.logout-warning {
+    color: #ee5a6f;
+    font-weight: bold;
+    margin: 15px 0;
+    padding: 10px;
+    background: #fff0f0;
+    border-radius: 8px;
+    border: 1px solid #ffcccc;
+}
+
+.logout-password-container {
+    margin: 20px 0;
+    text-align: left;
+}
+
+.logout-password-container label {
+    display: block;
+    margin-bottom: 8px;
+    color: #333;
+    font-weight: bold;
+}
+
+.logout-password-container input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.logout-password-container input:focus {
+    border-color: #ee5a6f;
+    box-shadow: 0 0 0 3px rgba(238, 90, 111, 0.2);
+}
+
+.danger-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.danger-btn:hover {
+    background: linear-gradient(135deg, #ee5a6f 0%, #d94a5f 100%);
+}
+
+/* 响应式注销样式 */
+@media (max-width: 768px) {
+    .logout-panel {
+        top: 10px;
+        right: 10px;
+    }
+    
+    .logout-btn {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+}
