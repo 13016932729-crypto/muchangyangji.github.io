@@ -184,63 +184,49 @@
                 <h3>📱 扫码领鸡蛋</h3>
                 <p class="scan-desc">扫描二维码，获取6位数字验证码，领取100个鸡蛋！</p>
                 
-                <div class="scan-options">
-                    <button id="camera-scan-btn" class="btn-primary scan-option-btn">
-                        <span>📷</span> 摄像头扫描
-                    </button>
-                    <button id="file-scan-btn" class="btn-secondary scan-option-btn">
-                        <span>🖼️</span> 选择图片
-                    </button>
-                    <button id="manual-input-btn" class="btn-secondary scan-option-btn manual-input-btn">
-                        <span>⌨️</span> 手动输入
-                    </button>
-                </div>
-                
-                <div id="camera-container" class="camera-container hidden">
+                <!-- 扫码取景框（顶部主要区域） -->
+                <div id="camera-container" class="camera-container">
                     <video id="camera-video" autoplay playsinline></video>
                     <canvas id="camera-canvas" class="hidden"></canvas>
                     <div class="scan-overlay">
                         <div class="scan-frame"></div>
                         <p class="scan-hint">将二维码对准框内</p>
                     </div>
-                    <button id="stop-camera-btn" class="btn-secondary">关闭摄像头</button>
                 </div>
                 
-                <div id="file-container" class="file-container hidden">
-                    <input type="file" id="qr-file-input" accept="image/*">
-                    <div id="file-preview" class="file-preview"></div>
+                <!-- 上传二维码按钮 -->
+                <div class="upload-section">
+                    <input type="file" id="qr-file-input" accept="image/*" hidden>
+                    <button id="file-scan-btn" class="btn-secondary upload-btn">
+                        <span>🖼️</span> 上传二维码图片
+                    </button>
+                    <div id="file-preview" class="file-preview hidden"></div>
                 </div>
                 
-                <div id="manual-input-container" class="manual-input-container hidden">
+                <!-- 验证码输入窗口 -->
+                <div class="verification-section">
                     <div class="input-hint">
-                        <p>请输入6位数字验证码</p>
-                        <span class="input-example">例如：123456</span>
+                        <p>验证码</p>
+                        <span class="input-example">6位数字</span>
                     </div>
                     <div class="code-input-wrapper">
                         <input type="text" id="manual-code-input" class="manual-code-input" 
-                               maxlength="6" placeholder="______" autocomplete="off">
+                               maxlength="6" placeholder="______" autocomplete="off" inputmode="numeric">
                     </div>
                     <div id="input-error" class="input-error hidden"></div>
-                    <div class="manual-input-buttons">
-                        <button id="confirm-manual-btn" class="btn-primary">确认领取</button>
-                        <button id="cancel-manual-btn" class="btn-secondary">返回</button>
-                    </div>
                 </div>
                 
-                <div id="scan-result" class="scan-result hidden">
-                    <p>识别结果：<span id="scan-code"></span></p>
-                    <div class="scan-buttons">
-                        <button id="verify-btn" class="btn-primary">验证领取</button>
-                        <button id="rescan-btn" class="btn-secondary">重新扫描</button>
-                    </div>
+                <!-- 操作按钮区域 -->
+                <div class="action-buttons">
+                    <button id="confirm-btn" class="btn-primary confirm-btn">确认</button>
+                    <button id="close-scan-btn" class="btn-secondary close-btn">返回</button>
                 </div>
                 
+                <!-- 加载状态 -->
                 <div id="scan-loading" class="scan-loading hidden">
                     <div class="loading-spinner"></div>
                     <p>正在验证...</p>
                 </div>
-                
-                <button id="close-scan-btn" class="btn-secondary close-scan-btn">关闭</button>
             </div>
         </div>
 

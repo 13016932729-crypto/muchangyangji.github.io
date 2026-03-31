@@ -103,27 +103,16 @@ const elements = {
     // 扫码相关元素
     scanQrBtn: document.getElementById('scan-qr-btn'),
     scanModal: document.getElementById('scan-modal'),
-    cameraScanBtn: document.getElementById('camera-scan-btn'),
     fileScanBtn: document.getElementById('file-scan-btn'),
     cameraContainer: document.getElementById('camera-container'),
-    fileContainer: document.getElementById('file-container'),
     cameraVideo: document.getElementById('camera-video'),
     cameraCanvas: document.getElementById('camera-canvas'),
-    stopCameraBtn: document.getElementById('stop-camera-btn'),
     qrFileInput: document.getElementById('qr-file-input'),
     filePreview: document.getElementById('file-preview'),
-    scanResult: document.getElementById('scan-result'),
-    scanCode: document.getElementById('scan-code'),
-    verifyBtn: document.getElementById('verify-btn'),
-    rescanBtn: document.getElementById('rescan-btn'),
     scanLoading: document.getElementById('scan-loading'),
     closeScanBtn: document.getElementById('close-scan-btn'),
-    // 手动输入相关元素
-    manualInputBtn: document.getElementById('manual-input-btn'),
-    manualInputContainer: document.getElementById('manual-input-container'),
+    // 验证码输入相关元素
     manualCodeInput: document.getElementById('manual-code-input'),
-    confirmManualBtn: document.getElementById('confirm-manual-btn'),
-    cancelManualBtn: document.getElementById('cancel-manual-btn'),
     inputError: document.getElementById('input-error'),
     // 生成验证码元素
     generateCodesBtn: document.getElementById('generate-codes-btn'),
@@ -199,25 +188,21 @@ function setupEventListeners() {
     // 扫码功能
     elements.scanQrBtn.addEventListener('click', openScanModal);
     elements.closeScanBtn.addEventListener('click', closeScanModal);
-    elements.cameraScanBtn.addEventListener('click', startCameraScan);
     elements.fileScanBtn.addEventListener('click', () => {
-        elements.fileContainer.classList.remove('hidden');
-        elements.cameraContainer.classList.add('hidden');
-        stopCamera();
+        elements.qrFileInput.click();
     });
-    elements.stopCameraBtn.addEventListener('click', stopCamera);
     elements.qrFileInput.addEventListener('change', handleFileScan);
-    elements.verifyBtn.addEventListener('click', verifyCode);
-    elements.rescanBtn.addEventListener('click', resetScan);
+    // 找到确认按钮并添加事件监听器
+    const confirmBtn = document.querySelector('#scan-modal .confirm-btn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', verifyCode);
+    }
     
-    // 手动输入功能
-    elements.manualInputBtn.addEventListener('click', showManualInput);
-    elements.confirmManualBtn.addEventListener('click', handleManualSubmit);
-    elements.cancelManualBtn.addEventListener('click', hideManualInput);
+    // 验证码输入功能
     elements.manualCodeInput.addEventListener('input', handleManualInput);
     elements.manualCodeInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
-            handleManualSubmit();
+            verifyCode();
         }
     });
     
@@ -925,7 +910,11 @@ let scanInterval = null;
 // 打开扫码弹窗
 function openScanModal() {
     elements.scanModal.classList.remove('hidden');
-    resetScan();
+    // 重置输入框
+    elements.manualCodeInput.value = '';
+    elements.manualCodeInput.classList.remove('valid', 'invalid');
+    // 直接进入摄像头扫描模式
+    startCameraScan();
 }
 
 // 关闭扫码弹窗
@@ -938,12 +927,11 @@ function closeScanModal() {
 // 重置扫码状态
 function resetScan() {
     currentScanCode = '';
-    elements.cameraContainer.classList.add('hidden');
-    elements.fileContainer.classList.add('hidden');
-    elements.scanResult.classList.add('hidden');
     elements.scanLoading.classList.add('hidden');
     elements.filePreview.innerHTML = '';
     elements.qrFileInput.value = '';
+    elements.manualCodeInput.value = '';
+    elements.manualCodeInput.classList.remove('valid', 'invalid');
     stopCamera();
 }
 
@@ -951,7 +939,6 @@ function resetScan() {
 async function startCameraScan() {
     try {
         elements.cameraContainer.classList.remove('hidden');
-        elements.fileContainer.classList.add('hidden');
         
         cameraStream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'environment' } 
@@ -967,7 +954,6 @@ async function startCameraScan() {
     } catch (error) {
         showToast('无法访问摄像头，请使用图片扫描方式');
         console.error('Camera error:', error);
-        elements.cameraContainer.classList.add('hidden');
     }
 }
 
@@ -1004,7 +990,13 @@ function scanFromCamera() {
         if (/^\d{6}$/.test(scannedCode)) {
             currentScanCode = scannedCode;
             stopCamera();
-            showScanResult(scannedCode);
+            // 自动填充到验证码输入窗口
+            elements.manualCodeInput.value = scannedCode;
+            // 添加视觉反馈
+            elements.manualCodeInput.classList.add('valid');
+            playSound('success');
+            // 显示成功提示
+            showToast('二维码识别成功！');
         }
     }
 }
@@ -1034,7 +1026,13 @@ function handleFileScan(e) {
                 const scannedCode = code.data.trim();
                 if (/^\d{6}$/.test(scannedCode)) {
                     currentScanCode = scannedCode;
-                    showScanResult(scannedCode);
+                    // 自动填充到验证码输入窗口
+                    elements.manualCodeInput.value = scannedCode;
+                    // 添加视觉反馈
+                    elements.manualCodeInput.classList.add('valid');
+                    playSound('success');
+                    // 显示成功提示
+                    showToast('二维码识别成功！');
                 } else {
                     showToast('二维码内容必须是6位数字');
                 }
@@ -1047,66 +1045,90 @@ function handleFileScan(e) {
     reader.readAsDataURL(file);
 }
 
-// 显示扫描结果
+// 显示扫描结果 - 已废弃，现在直接填充到输入框
 function showScanResult(code) {
-    elements.scanCode.textContent = code;
-    elements.scanResult.classList.remove('hidden');
+    // 保留此函数以保持兼容性
+    elements.manualCodeInput.value = code;
+    elements.manualCodeInput.classList.add('valid');
     playSound('success');
+    showToast('二维码识别成功！');
 }
 
 // 验证验证码
 async function verifyCode() {
-    if (!currentScanCode || !/^\d{6}$/.test(currentScanCode)) {
+    // 使用输入框中的值进行验证
+    const code = elements.manualCodeInput.value.trim();
+    
+    if (!code || !/^\d{6}$/.test(code)) {
         showToast('无效的验证码');
         return;
     }
     
     elements.scanLoading.classList.remove('hidden');
-    elements.scanResult.classList.add('hidden');
     
-    try {
-        // 读取验证码文件
-        const response = await fetch('yanzhengma.txt');
-        if (!response.ok) {
-            throw new Error('无法读取验证码文件');
-        }
-        
-        const text = await response.text();
-        // 统一处理换行符，支持 Windows(CRLF) 和 Unix(LF)
-        const lines = text.replace(/\r\n/g, '\n').split('\n');
+    // 尝试验证，最多重试3次
+    let retries = 0;
+    const maxRetries = 3;
+    
+    while (retries < maxRetries) {
+        try {
+            // 读取验证码文件
+            const response = await fetch('yanzhengma.txt');
+            if (!response.ok) {
+                throw new Error('无法读取验证码文件');
+            }
+            
+            const text = await response.text();
+            // 统一处理换行符，支持 Windows(CRLF) 和 Unix(LF)
+            const lines = text.replace(/\r\n/g, '\n').split('\n');
 
-        // 查找验证码
-        let codeIndex = -1;
-        const validCodes = [];
+            // 查找验证码
+            let codeIndex = -1;
 
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
-            if (line && !line.startsWith('#')) {
-                validCodes.push({ line, index: i });
-                if (line === currentScanCode) {
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line && !line.startsWith('#') && line === code) {
                     codeIndex = i;
+                    break;
                 }
             }
+            
+            if (codeIndex === -1) {
+                elements.scanLoading.classList.add('hidden');
+                showToast('验证码无效或已被使用');
+                playSound('error');
+                return;
+            }
+            
+            // 检查是否已使用过
+            const usedCodes = JSON.parse(localStorage.getItem('used_yanzhengma') || '[]');
+            const alreadyUsed = usedCodes.some(item => item.code === code);
+            
+            if (alreadyUsed) {
+                elements.scanLoading.classList.add('hidden');
+                showToast('该验证码已被使用');
+                playSound('error');
+                return;
+            }
+            
+            // 执行奖励发放
+            await processReward(code);
+            return; // 验证成功，退出函数
+            
+        } catch (error) {
+            console.error('Verification error:', error);
+            retries++;
+            
+            if (retries >= maxRetries) {
+                elements.scanLoading.classList.add('hidden');
+                showToast('网络异常，请检查网络连接后重试');
+                playSound('error');
+                return;
+            }
+            
+            // 等待一段时间后重试
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
-        
-        if (codeIndex === -1) {
-            elements.scanLoading.classList.add('hidden');
-        showToast('验证码无效或已被使用');
-        playSound('error');
-        setTimeout(() => {
-            resetScan();
-        }, 1500);
-        return;
-    }
-    
-    // 执行奖励发放
-    await processReward(currentScanCode);
-    
-} catch (error) {
-    console.error('Verification error:', error);
-        elements.scanLoading.classList.add('hidden');
-        showToast('验证失败，请稍后重试');
-        playSound('error');
     }
 }
 
@@ -1201,31 +1223,7 @@ async function processReward(code) {
     return true;
 }
 
-// ==================== 手动输入功能 ====================
-
-// 显示手动输入界面
-function showManualInput() {
-    elements.manualInputContainer.classList.remove('hidden');
-    elements.cameraContainer.classList.add('hidden');
-    elements.fileContainer.classList.add('hidden');
-    elements.scanResult.classList.add('hidden');
-    stopCamera();
-    
-    // 自动聚焦输入框
-    setTimeout(() => {
-        elements.manualCodeInput.focus();
-    }, 100);
-}
-
-// 隐藏手动输入界面
-function hideManualInput() {
-    elements.manualInputContainer.classList.add('hidden');
-    elements.manualCodeInput.value = '';
-    elements.manualCodeInput.classList.remove('valid', 'invalid');
-    hideInputError();
-}
-
-// 处理手动输入
+// 处理验证码输入
 function handleManualInput(e) {
     const value = e.target.value;
     
@@ -1260,107 +1258,6 @@ function showInputError(message) {
 function hideInputError() {
     elements.inputError.classList.add('hidden');
     elements.inputError.textContent = '';
-}
-
-// 处理手动提交
-async function handleManualSubmit() {
-    const code = elements.manualCodeInput.value.trim();
-    
-    console.log('=== 验证码验证开始 ===');
-    console.log('输入的验证码:', code, '长度:', code.length, '类型:', typeof code);
-    
-    // 验证输入格式
-    if (!code) {
-        showInputError('请输入验证码');
-        return;
-    }
-    
-    if (code.length !== 6) {
-        showInputError('验证码必须是6位数字');
-        return;
-    }
-    
-    if (!/^\d{6}$/.test(code)) {
-        showInputError('验证码只能包含数字');
-        return;
-    }
-    
-    // 检查是否已使用过
-    const usedCodes = JSON.parse(localStorage.getItem('used_yanzhengma') || '[]');
-    const alreadyUsed = usedCodes.some(item => item.code === code);
-    
-    console.log('已使用的验证码:', usedCodes);
-    console.log('是否已使用:', alreadyUsed);
-    
-    if (alreadyUsed) {
-        showInputError('该验证码已被使用');
-        return;
-    }
-    
-    // 显示加载状态
-    elements.scanLoading.classList.remove('hidden');
-    elements.manualInputContainer.classList.add('hidden');
-    
-    try {
-        // 读取验证码文件
-        console.log('正在读取 yanzhengma.txt 文件...');
-        const response = await fetch('yanzhengma.txt');
-        if (!response.ok) {
-            throw new Error('无法读取验证码文件，HTTP状态: ' + response.status);
-        }
-        
-        const text = await response.text();
-        console.log('文件内容长度:', text.length, '字符');
-        
-        // 统一处理换行符，支持 Windows(CRLF) 和 Unix(LF)
-        const normalizedText = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-        const lines = normalizedText.split('\n');
-        console.log('总行数:', lines.length);
-
-        // 查找验证码
-        let codeExists = false;
-        let matchingLine = -1;
-
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const trimmedLine = line.trim();
-            
-            // 调试输出前20行和匹配行
-            if (i < 20 || trimmedLine.includes(code)) {
-                console.log(`行 ${i}: "${trimmedLine}" (原始: "${line}")`);
-            }
-            
-            if (trimmedLine && !trimmedLine.startsWith('#')) {
-                if (trimmedLine === code) {
-                    codeExists = true;
-                    matchingLine = i;
-                    console.log('找到匹配验证码，行号:', i);
-                    break;
-                }
-            }
-        }
-        
-        console.log('验证结果: codeExists =', codeExists);
-        
-        if (!codeExists) {
-            elements.scanLoading.classList.add('hidden');
-            elements.manualInputContainer.classList.remove('hidden');
-            showInputError('验证码无效或不存在');
-            return;
-        }
-        
-        // 设置当前验证码并发放奖励
-        currentScanCode = code;
-        console.log('验证成功，准备发放奖励');
-        await processReward(code);
-        
-    } catch (error) {
-        console.error('Manual verification error:', error);
-        console.error('错误堆栈:', error.stack);
-        elements.scanLoading.classList.add('hidden');
-        elements.manualInputContainer.classList.remove('hidden');
-        showInputError('验证失败，请稍后重试: ' + error.message);
-    }
 }
 
 // 生成1000条不重复的6位数字验证码
