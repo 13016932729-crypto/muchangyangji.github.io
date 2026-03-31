@@ -50,30 +50,31 @@
         <div id="game-screen" class="screen hidden">
             <!-- 左上角状态显示 -->
             <div class="status-panel">
-                <div class="user-info">
-                    <img id="user-avatar" src="" alt="头像" class="avatar-small">
-                    <span id="user-name" class="username"></span>
+                <div class="panel-header">
+                    <div class="user-info">
+                        <img id="user-avatar" src="" alt="头像" class="avatar-small">
+                        <div class="user-details">
+                            <span id="user-name" class="username"></span>
+                            <div class="user-stats-row">
+                                <span class="user-stat">等级 <span id="ranch-level">1</span></span>
+                                <span class="user-stat" id="ranch-rating">破鸡笼</span>
+                                <span class="user-stat gold">💰 <span id="gold">10000</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="logout-btn" class="logout-btn-compact" title="注销">🚪</button>
                 </div>
                 <div class="stats">
-                    <div class="stat-item">
-                        <span class="stat-label">牧场等级：</span>
-                        <span id="ranch-level" class="stat-value">1</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">牧场评级：</span>
-                        <span id="ranch-rating" class="stat-value rating">破鸡笼</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">金币：</span>
-                        <span id="gold" class="stat-value gold">10000</span>
-                    </div>
                     <div class="stat-item">
                         <span class="stat-label">饲料：</span>
                         <div class="progress-container">
                             <div class="progress-bar">
                                 <div class="progress-fill feed-progress"></div>
                             </div>
-                            <span class="progress-rate" id="feed-rate">0/0</span>
+                            <div class="rate-container">
+                                <span class="production-rate"></span>
+                                <span class="progress-rate" id="feed-rate">0/0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="stat-item">
@@ -82,7 +83,10 @@
                             <div class="progress-bar">
                                 <div class="progress-fill chicken-progress"></div>
                             </div>
-                            <span class="progress-rate" id="chicken-rate">0/0</span>
+                            <div class="rate-container">
+                                <span class="production-rate"></span>
+                                <span class="progress-rate" id="chicken-rate">0/0</span>
+                            </div>
                         </div>
                     </div>
                     <div class="stat-item">
@@ -91,17 +95,13 @@
                             <div class="progress-bar">
                                 <div class="progress-fill egg-progress"></div>
                             </div>
-                            <span class="progress-rate" id="egg-rate">0/0</span>
+                            <div class="rate-container">
+                                <span class="production-rate"></span>
+                                <span class="progress-rate" id="egg-rate">0/0</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-
-
-            <!-- 右上角注销按钮 -->
-            <div class="logout-panel">
-                <button id="logout-btn" class="logout-btn">🚪 注销</button>
             </div>
 
             <!-- 牧场主区域 -->

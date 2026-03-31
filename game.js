@@ -486,14 +486,11 @@ function updateProgressBars(capacity) {
         feedProgress.style.width = feedPercent + '%';
         feedRate.textContent = `${Math.floor(gameState.resources.feed)}/${capacity.feed}`;
         
-        // 添加生产速率显示（放在数量/上限前面）
-        let feedProductionRateEl = feedRate.previousElementSibling;
-        if (!feedProductionRateEl || !feedProductionRateEl.classList.contains('production-rate')) {
-            feedProductionRateEl = document.createElement('span');
-            feedProductionRateEl.className = 'production-rate';
-            feedRate.parentNode.insertBefore(feedProductionRateEl, feedRate);
+        // 更新生产速率显示
+        const feedProductionRateEl = feedRate.parentNode.querySelector('.production-rate');
+        if (feedProductionRateEl) {
+            feedProductionRateEl.textContent = `-${feedConsumptionRate}/分钟`;
         }
-        feedProductionRateEl.textContent = `-${feedConsumptionRate}/分钟`;
     }
     
     // 鸡进度条
@@ -504,14 +501,11 @@ function updateProgressBars(capacity) {
         chickenProgress.style.width = chickenPercent + '%';
         chickenRate.textContent = `${gameState.resources.chickens}/${capacity.chickens}`;
         
-        // 添加生产速率显示（放在数量/上限前面）
-        let chickenProductionRateEl = chickenRate.previousElementSibling;
-        if (!chickenProductionRateEl || !chickenProductionRateEl.classList.contains('production-rate')) {
-            chickenProductionRateEl = document.createElement('span');
-            chickenProductionRateEl.className = 'production-rate';
-            chickenRate.parentNode.insertBefore(chickenProductionRateEl, chickenRate);
+        // 更新生产速率显示
+        const chickenProductionRateEl = chickenRate.parentNode.querySelector('.production-rate');
+        if (chickenProductionRateEl) {
+            chickenProductionRateEl.textContent = `${hatchRate}/分钟`;
         }
-        chickenProductionRateEl.textContent = `${hatchRate}/分钟`;
     }
     
     // 鸡蛋进度条
@@ -522,14 +516,11 @@ function updateProgressBars(capacity) {
         eggProgress.style.width = eggPercent + '%';
         eggRate.textContent = `${Math.floor(gameState.resources.eggs)}/${capacity.eggs}`;
         
-        // 添加生产速率显示（放在数量/上限前面）
-        let eggProductionRateEl = eggRate.previousElementSibling;
-        if (!eggProductionRateEl || !eggProductionRateEl.classList.contains('production-rate')) {
-            eggProductionRateEl = document.createElement('span');
-            eggProductionRateEl.className = 'production-rate';
-            eggRate.parentNode.insertBefore(eggProductionRateEl, eggRate);
+        // 更新生产速率显示
+        const eggProductionRateEl = eggRate.parentNode.querySelector('.production-rate');
+        if (eggProductionRateEl) {
+            eggProductionRateEl.textContent = `${eggProductionRate}/分钟`;
         }
-        eggProductionRateEl.textContent = `${eggProductionRate}/分钟`;
     }
 }
 
