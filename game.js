@@ -26,17 +26,17 @@ const CONFIG = {
         { min: 100, max: 100, name: '最NB牧场', level: 11 }
     ],
     ENVIRONMENT_DECORATIONS: [
-        [],
-        ['🌱'],
-        ['🌱', '🌻'],
-        ['🌱', '🌻', '🌳'],
-        ['🌱', '🌻', '🌳', '🌲'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺', '🌸'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺', '🌸', '🌴'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺', '🌸', '🌴', '🌵'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺', '🌸', '🌴', '🌵', '🌷'],
-        ['🌱', '🌻', '🌳', '🌲', '🌺', '🌸', '🌴', '🌵', '🌷', '🌹', '✨', '⭐']
+        [], // 评级1级：保持初始画面
+        ['🌱', '🌱', '🌱'], // 评级2级：添加小草装饰元素
+        ['🌱', '🌱', '🌱', '🚰'], // 评级3级：增加水槽设施
+        ['🌱', '🌱', '🌱', '🚰', '🥣'], // 评级4级：增加食槽设施
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪'], // 评级5级：增加草垛堆装饰
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪'], // 评级6级：添加一圈栅栏
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪', '🌳'], // 评级7级：增加树木元素
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪', '🌳', '🌲'], // 评级8级：升级水槽、食槽、草垛堆的视觉形象
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪', '🌳', '🌲', '🏠'], // 评级9级：升级栅栏视觉形象
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪', '🌳', '🌲', '🏠', '🏠'], // 评级10级：添加鸡活动玩耍的架子设施
+        ['🌱', '🌱', '🌱', '🚰', '🥣', '🎪', '🚪', '🚪', '🚪', '🚪', '🌳', '🌲', '🏠', '🏠', '🌸', '🌸', '🌸', '🌺', '🌺', '🌺', '🌷', '🌷', '🌷', '✨', '✨', '✨'] // 评级11级：空地区域添加鲜花装饰，实现开满鲜花的视觉效果
     ]
 };
 
@@ -77,12 +77,7 @@ const elements = {
     ranchLevel: document.getElementById('ranch-level'),
     ranchRating: document.getElementById('ranch-rating'),
     goldDisplay: document.getElementById('gold'),
-    feedDisplay: document.getElementById('feed'),
-    feedDisplay2: document.getElementById('feed-display'),
-    chickenCount: document.getElementById('chicken-count'),
-    chickenCapacity: document.getElementById('chicken-capacity'),
-    eggCount: document.getElementById('egg-count'),
-    eggCapacity: document.getElementById('egg-capacity'),
+
     coopStructure: document.getElementById('coop-structure'),
     chickensContainer: document.getElementById('chickens-container'),
     environment: document.getElementById('environment'),
@@ -103,12 +98,9 @@ const elements = {
     // 扫码相关元素
     scanQrBtn: document.getElementById('scan-qr-btn'),
     scanModal: document.getElementById('scan-modal'),
-    fileScanBtn: document.getElementById('file-scan-btn'),
     cameraContainer: document.getElementById('camera-container'),
     cameraVideo: document.getElementById('camera-video'),
     cameraCanvas: document.getElementById('camera-canvas'),
-    qrFileInput: document.getElementById('qr-file-input'),
-    filePreview: document.getElementById('file-preview'),
     scanLoading: document.getElementById('scan-loading'),
     closeScanBtn: document.getElementById('close-scan-btn'),
     // 验证码输入相关元素
@@ -126,7 +118,18 @@ const elements = {
     // 游戏标题点击相关元素
     gameTitle: document.getElementById('game-title'),
     clickCounter: document.getElementById('click-counter'),
-    clickProgress: document.getElementById('click-progress')
+    clickProgress: document.getElementById('click-progress'),
+    // 离线回归系统相关元素
+    offlineReturnModal: document.getElementById('offline-return-modal'),
+    offlineReturnContent: document.getElementById('offline-return-content'),
+    enterGameBtn: document.getElementById('enter-game-btn'),
+    // 日志记录相关元素
+    logContainer: document.getElementById('log-container'),
+    logContent: document.getElementById('log-content'),
+    clearLogBtn: document.getElementById('clear-log-btn'),
+    // 孵化进度相关元素
+    hatchProgressFill: document.getElementById('hatch-progress-fill'),
+    hatchProgressText: document.getElementById('hatch-progress-text')
 };
 
 // 标题点击计数器
@@ -179,6 +182,44 @@ function setupEventListeners() {
     elements.confirmBtn.addEventListener('click', confirmTrade);
     elements.cancelBtn.addEventListener('click', closeTradeModal);
     
+    // 确保返回按钮可点击
+    if (elements.cancelBtn) {
+        elements.cancelBtn.style.cursor = 'pointer';
+        elements.cancelBtn.style.opacity = '1';
+        elements.cancelBtn.style.pointerEvents = 'auto';
+    }
+    
+    // 数量输入区域交互
+    const quantityDisplay = document.getElementById('quantity-value');
+    const quantityInput = document.getElementById('quantity-input');
+    if (quantityDisplay && quantityInput) {
+        quantityDisplay.addEventListener('click', () => {
+            quantityDisplay.classList.add('hidden');
+            quantityInput.classList.remove('hidden');
+            quantityInput.focus();
+            quantityInput.select();
+        });
+        
+        quantityInput.addEventListener('blur', () => {
+            quantityDisplay.classList.remove('hidden');
+            quantityInput.classList.add('hidden');
+            // 确保输入值在有效范围内
+            let value = parseInt(quantityInput.value);
+            const max = parseInt(elements.quantitySlider.max);
+            const min = parseInt(elements.quantitySlider.min);
+            value = Math.max(min, Math.min(max, value));
+            quantityInput.value = value;
+            elements.quantitySlider.value = value;
+            updateTradeDisplay();
+        });
+        
+        quantityInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                quantityInput.blur();
+            }
+        });
+    }
+    
     // 手动孵化
     elements.coopStructure.addEventListener('click', handleManualHatch);
     
@@ -188,10 +229,6 @@ function setupEventListeners() {
     // 扫码功能
     elements.scanQrBtn.addEventListener('click', openScanModal);
     elements.closeScanBtn.addEventListener('click', closeScanModal);
-    elements.fileScanBtn.addEventListener('click', () => {
-        elements.qrFileInput.click();
-    });
-    elements.qrFileInput.addEventListener('change', handleFileScan);
     // 找到确认按钮并添加事件监听器
     const confirmBtn = document.querySelector('#scan-modal .confirm-btn');
     if (confirmBtn) {
@@ -218,6 +255,31 @@ function setupEventListeners() {
             handleLogout();
         }
     });
+    
+    // 离线回归系统提示
+    if (elements.enterGameBtn) {
+        elements.enterGameBtn.addEventListener('click', closeOfflineReturnModal);
+    }
+    
+    // 日志记录功能
+    if (elements.clearLogBtn) {
+        elements.clearLogBtn.addEventListener('click', clearLog);
+    }
+    
+    // 日志容器折叠/展开功能
+    if (elements.logContainer) {
+        const logHeader = elements.logContainer.querySelector('.log-header');
+        if (logHeader) {
+            logHeader.addEventListener('click', () => {
+                elements.logContainer.classList.toggle('collapsed');
+            });
+        }
+    }
+    
+    // 添加初始日志
+    addLogEntry('系统', '欢迎来到牧场养鸡大亨！', 'system');
+    
+
 }
 
 // 设置头像选择功能
@@ -392,12 +454,6 @@ function updateUI() {
     elements.ranchLevel.textContent = gameState.ranch.level;
     elements.ranchRating.textContent = ratingInfo.name;
     elements.goldDisplay.textContent = formatNumber(gameState.resources.gold);
-    elements.feedDisplay.textContent = formatNumber(gameState.resources.feed);
-    elements.feedDisplay2.textContent = formatNumber(gameState.resources.feed);
-    elements.chickenCount.textContent = formatNumber(gameState.resources.chickens);
-    elements.chickenCapacity.textContent = capacity.chickens;
-    elements.eggCount.textContent = formatNumber(gameState.resources.eggs);
-    elements.eggCapacity.textContent = capacity.eggs;
     
     // 更新升级成本
     elements.upgradeCost.textContent = formatNumber(upgradeCost) + '金币';
@@ -405,8 +461,76 @@ function updateUI() {
     // 更新鸡笼外观
     elements.coopStructure.className = `coop-structure level-${ratingInfo.level}`;
     
+    // 更新进度条
+    updateProgressBars(capacity);
+    
     // 更新按钮状态
     updateButtonStates();
+}
+
+// 更新进度条显示
+function updateProgressBars(capacity) {
+    const ratingInfo = getRanchRatingInfo(gameState.ranch.level);
+    const ratingIndex = ratingInfo.level - 1;
+    
+    // 计算速率
+    const feedConsumptionRate = roundToThreeDecimals(gameState.resources.chickens * 0.5);
+    const eggProductionRate = roundToThreeDecimals(gameState.resources.chickens * CONFIG.PRODUCTION_RATES.EGG[ratingIndex]);
+    const hatchRate = roundToThreeDecimals(gameState.resources.eggs * CONFIG.PRODUCTION_RATES.HATCH[ratingIndex]);
+    
+    // 饲料进度条
+    const feedProgress = document.querySelector('.feed-progress');
+    const feedRate = document.getElementById('feed-rate');
+    if (feedProgress && feedRate) {
+        const feedPercent = Math.min((gameState.resources.feed / capacity.feed) * 100, 100);
+        feedProgress.style.width = feedPercent + '%';
+        feedRate.textContent = `${Math.floor(gameState.resources.feed)}/${capacity.feed}`;
+        
+        // 添加生产速率显示（放在数量/上限前面）
+        let feedProductionRateEl = feedRate.previousElementSibling;
+        if (!feedProductionRateEl || !feedProductionRateEl.classList.contains('production-rate')) {
+            feedProductionRateEl = document.createElement('span');
+            feedProductionRateEl.className = 'production-rate';
+            feedRate.parentNode.insertBefore(feedProductionRateEl, feedRate);
+        }
+        feedProductionRateEl.textContent = `-${feedConsumptionRate}/分钟`;
+    }
+    
+    // 鸡进度条
+    const chickenProgress = document.querySelector('.chicken-progress');
+    const chickenRate = document.getElementById('chicken-rate');
+    if (chickenProgress && chickenRate) {
+        const chickenPercent = Math.min((gameState.resources.chickens / capacity.chickens) * 100, 100);
+        chickenProgress.style.width = chickenPercent + '%';
+        chickenRate.textContent = `${gameState.resources.chickens}/${capacity.chickens}`;
+        
+        // 添加生产速率显示（放在数量/上限前面）
+        let chickenProductionRateEl = chickenRate.previousElementSibling;
+        if (!chickenProductionRateEl || !chickenProductionRateEl.classList.contains('production-rate')) {
+            chickenProductionRateEl = document.createElement('span');
+            chickenProductionRateEl.className = 'production-rate';
+            chickenRate.parentNode.insertBefore(chickenProductionRateEl, chickenRate);
+        }
+        chickenProductionRateEl.textContent = `${hatchRate}/分钟`;
+    }
+    
+    // 鸡蛋进度条
+    const eggProgress = document.querySelector('.egg-progress');
+    const eggRate = document.getElementById('egg-rate');
+    if (eggProgress && eggRate) {
+        const eggPercent = Math.min((gameState.resources.eggs / capacity.eggs) * 100, 100);
+        eggProgress.style.width = eggPercent + '%';
+        eggRate.textContent = `${Math.floor(gameState.resources.eggs)}/${capacity.eggs}`;
+        
+        // 添加生产速率显示（放在数量/上限前面）
+        let eggProductionRateEl = eggRate.previousElementSibling;
+        if (!eggProductionRateEl || !eggProductionRateEl.classList.contains('production-rate')) {
+            eggProductionRateEl = document.createElement('span');
+            eggProductionRateEl.className = 'production-rate';
+            eggRate.parentNode.insertBefore(eggProductionRateEl, eggRate);
+        }
+        eggProductionRateEl.textContent = `${eggProductionRate}/分钟`;
+    }
 }
 
 // 更新按钮状态
@@ -425,15 +549,21 @@ function updateButtonStates() {
 }
 
 // 格式化数字
-// 格式化数字显示：去除小数点，使用适当单位
+// 格式化数字显示：
+// - 数值在万以下：直接显示数字，不添加单位
+// - 数值在万以上：显示为带小数点后两位的数字+单位，若小数点后两位均为0则不显示小数部分
 function formatNumber(num) {
     const intNum = Math.floor(num);
     if (intNum >= 100000000) {
-        return Math.floor(intNum / 100000000) + '亿';
+        const value = intNum / 100000000;
+        const formatted = value.toFixed(2);
+        // 移除末尾的.00
+        return formatted.endsWith('.00') ? formatted.substring(0, formatted.length - 3) + '亿' : formatted + '亿';
     } else if (intNum >= 10000) {
-        return Math.floor(intNum / 10000) + '万';
-    } else if (intNum >= 1000) {
-        return Math.floor(intNum / 1000) + '千';
+        const value = intNum / 10000;
+        const formatted = value.toFixed(2);
+        // 移除末尾的.00
+        return formatted.endsWith('.00') ? formatted.substring(0, formatted.length - 3) + '万' : formatted + '万';
     }
     return intNum.toString();
 }
@@ -446,11 +576,12 @@ function roundToThreeDecimals(num) {
 // 渲染鸡
 function renderChickens() {
     const container = elements.chickensContainer;
+    if (!container) return;
+    
     container.innerHTML = '';
     
-    // 显示的鸡数量基于牧场评级
-    const ratingInfo = getRanchRatingInfo(gameState.ranch.level);
-    const visibleChickens = Math.min(ratingInfo.level, gameState.resources.chickens);
+    // 每拥有10只鸡显示1只小鸡形象
+    const visibleChickens = Math.max(1, Math.floor(gameState.resources.chickens / 10));
     
     for (let i = 0; i < visibleChickens; i++) {
         const chicken = document.createElement('div');
@@ -469,9 +600,11 @@ function updateEnvironment() {
     const ratingInfo = getRanchRatingInfo(gameState.ranch.level);
     const decorations = CONFIG.ENVIRONMENT_DECORATIONS[ratingInfo.level - 1] || [];
     
-    elements.environment.innerHTML = decorations.map(decoration => 
-        `<span>${decoration}</span>`
-    ).join('');
+    if (elements.environment) {
+        elements.environment.innerHTML = decorations.map(decoration => 
+            `<span>${decoration}</span>`
+        ).join('');
+    }
 }
 
 // 打开交易弹窗
@@ -491,7 +624,7 @@ function openTradeModal(type) {
             unitPrice = CONFIG.PRICES.CHICKEN;
             break;
         case 'buyFeed':
-            title = '购买饲料（斤）';
+            title = '购买饲料（袋）';
             maxQuantity = Math.min(
                 Math.floor(gameState.resources.gold / CONFIG.PRICES.FEED),
                 capacity.feed - gameState.resources.feed
@@ -528,6 +661,12 @@ function openTradeModal(type) {
 function updateTradeDisplay() {
     const quantity = parseInt(elements.quantitySlider.value);
     elements.quantityValue.textContent = quantity;
+    
+    // 同步更新输入框的值
+    const quantityInput = document.getElementById('quantity-input');
+    if (quantityInput) {
+        quantityInput.value = quantity;
+    }
     
     let unitPrice;
     switch(currentTrade) {
@@ -579,8 +718,9 @@ function confirmTrade() {
                 gameState.resources.feed + quantity <= capacity.feed) {
                 gameState.resources.gold -= feedCost;
                 gameState.resources.feed += quantity;
-                showToast(`成功购买 ${quantity} 斤饲料！`);
+                showToast(`成功购买 ${quantity} 袋饲料！`);
                 playSound('buy');
+                addLogEntry('系统', `成功购买 ${quantity} 袋饲料！`, 'action');
             }
             break;
         case 'sellChicken':
@@ -646,27 +786,47 @@ function upgradeRanch() {
 function handleManualHatch() {
     if (gameState.resources.eggs <= 0) {
         showToast('没有鸡蛋可以孵化！');
+        addLogEntry('系统', '没有鸡蛋可以孵化！', 'warning');
         return;
     }
     
     const capacity = getCapacity(gameState.ranch.level);
     if (gameState.resources.chickens >= capacity.chickens) {
         showToast('鸡的数量已达到上限！');
+        addLogEntry('系统', '鸡的数量已达到上限！', 'warning');
         return;
     }
     
+    // 点击动画
+    elements.coopStructure.classList.add('hatch-animation');
+    setTimeout(() => {
+        elements.coopStructure.classList.remove('hatch-animation');
+    }, 300);
+    
     gameState.manualHatch.clicks++;
     
-    // 显示进度
-    showHatchProgress();
+    // 更新进度条
+    updateHatchProgress();
     
     if (gameState.manualHatch.clicks >= gameState.manualHatch.required) {
         gameState.resources.eggs--;
         gameState.resources.chickens++;
         gameState.manualHatch.clicks = 0;
         
+        // 孵化成功动画
+        elements.coopStructure.classList.add('hatch-success');
+        setTimeout(() => {
+            elements.coopStructure.classList.remove('hatch-success');
+        }, 1000);
+        
         showToast('恭喜！成功孵化一只小鸡！');
         playSound('hatch');
+        addLogEntry('系统', '成功孵化一只小鸡！', 'action');
+        
+        // 每孵化出10只鸡时，显示小鸡形象从鸡舍移动至中间空地的动画效果
+        if (gameState.resources.chickens % 10 === 0) {
+            showChickenMoveAnimation();
+        }
         
         updateUI();
         renderChickens();
@@ -676,31 +836,52 @@ function handleManualHatch() {
     playSound('click');
 }
 
-// 显示孵化进度
-function showHatchProgress() {
+// 更新孵化进度条
+function updateHatchProgress() {
     const progress = (gameState.manualHatch.clicks / gameState.manualHatch.required) * 100;
     
-    // 移除已有的进度显示
-    const existingProgress = document.querySelector('.hatch-progress');
-    if (existingProgress) {
-        existingProgress.remove();
+    if (elements.hatchProgressFill) {
+        elements.hatchProgressFill.style.width = progress + '%';
     }
     
-    const progressDiv = document.createElement('div');
-    progressDiv.className = 'hatch-progress';
-    progressDiv.innerHTML = `
-        <div>孵化进度</div>
-        <div class="hatch-progress-bar">
-            <div class="hatch-progress-fill" style="width: ${progress}%"></div>
-        </div>
-        <div>${gameState.manualHatch.clicks}/${gameState.manualHatch.required}</div>
-    `;
+    if (elements.hatchProgressText) {
+        elements.hatchProgressText.textContent = Math.round(progress) + '%';
+    }
+}
+
+// 显示小鸡移动动画
+function showChickenMoveAnimation() {
+    const chicken = document.createElement('div');
+    chicken.className = 'chicken-move-animation';
+    chicken.textContent = '🐔';
+    chicken.style.position = 'fixed';
+    chicken.style.fontSize = '30px';
+    chicken.style.zIndex = '1000';
     
-    document.body.appendChild(progressDiv);
+    // 从鸡舍位置开始
+    const coopRect = elements.coopStructure.getBoundingClientRect();
+    chicken.style.left = coopRect.left + 'px';
+    chicken.style.top = coopRect.top + 'px';
     
+    document.body.appendChild(chicken);
+    
+    // 移动到牧场中间
     setTimeout(() => {
-        progressDiv.remove();
-    }, 1000);
+        chicken.style.transition = 'all 1s ease';
+        chicken.style.left = '50%';
+        chicken.style.top = '50%';
+        chicken.style.transform = 'translate(-50%, -50%)';
+    }, 100);
+    
+    // 动画结束后移除
+    setTimeout(() => {
+        chicken.style.opacity = '0';
+        setTimeout(() => {
+            if (chicken.parentNode) {
+                chicken.parentNode.removeChild(chicken);
+            }
+        }, 500);
+    }, 1100);
 }
 
 // 处理点击鸡
@@ -733,7 +914,22 @@ function processGameTick() {
     
     // 饲料消耗（计算时保留三位有效数字）
     const feedConsumption = roundToThreeDecimals(gameState.resources.chickens * 0.5);
-    const actualFeedConsumption = roundToThreeDecimals(Math.min(feedConsumption, gameState.resources.feed));
+    
+    // 检查饲料是否足够
+    if (gameState.resources.feed < feedConsumption) {
+        // 饲料不足，不进行产出操作
+        showToast('饲料不足，无法正常产出！');
+        
+        // 消耗所有可用饲料
+        gameState.resources.feed = 0;
+        
+        updateUI();
+        saveGame();
+        return;
+    }
+    
+    // 饲料足够，进行正常消耗
+    const actualFeedConsumption = roundToThreeDecimals(feedConsumption);
     gameState.resources.feed = roundToThreeDecimals(gameState.resources.feed - actualFeedConsumption);
     
     // 产蛋率（计算时保留三位有效数字）
@@ -741,8 +937,10 @@ function processGameTick() {
     const eggProduction = roundToThreeDecimals(gameState.resources.chickens * eggRate);
     const newEggs = roundToThreeDecimals(Math.min(eggProduction, capacity.eggs - gameState.resources.eggs));
     
-    if (newEggs > 0 && actualFeedConsumption >= roundToThreeDecimals(feedConsumption * 0.5)) {
-        gameState.resources.eggs += Math.floor(newEggs);
+    let eggsProduced = 0;
+    if (newEggs > 0) {
+        eggsProduced = Math.floor(newEggs);
+        gameState.resources.eggs += eggsProduced;
     }
     
     // 孵化率（计算时保留三位有效数字）
@@ -750,15 +948,27 @@ function processGameTick() {
     const hatchProduction = roundToThreeDecimals(gameState.resources.eggs * hatchRate);
     const newChickens = roundToThreeDecimals(Math.min(hatchProduction, capacity.chickens - gameState.resources.chickens));
     
+    let chickensHatched = 0;
     if (newChickens > 0) {
-        const hatched = Math.floor(newChickens);
-        gameState.resources.eggs -= hatched;
-        gameState.resources.chickens += hatched;
-        
-        if (hatched > 0) {
-            showToast(`自动孵化了 ${hatched} 只小鸡！`);
-            renderChickens();
+        chickensHatched = Math.floor(newChickens);
+        gameState.resources.eggs -= chickensHatched;
+        gameState.resources.chickens += chickensHatched;
+        renderChickens();
+    }
+    
+    // 显示产出提示信息
+    if (eggsProduced > 0 || chickensHatched > 0) {
+        let message = '';
+        if (eggsProduced > 0) {
+            message += `产出 ${eggsProduced} 个鸡蛋`;
         }
+        if (eggsProduced > 0 && chickensHatched > 0) {
+            message += '，';
+        }
+        if (chickensHatched > 0) {
+            message += `孵化 ${chickensHatched} 只小鸡`;
+        }
+        showToast(`🎉 ${message}！`);
     }
     
     updateUI();
@@ -769,6 +979,7 @@ function processGameTick() {
 function processOfflineProgress() {
     const now = Date.now();
     const offlineTime = roundToThreeDecimals((now - gameState.lastSaveTime) / 1000 / 60); // 分钟
+    const offlineHours = roundToThreeDecimals(offlineTime / 60); // 小时
     
     if (offlineTime > 1 && gameState.lastSaveTime > 0) {
         const capacity = getCapacity(gameState.ranch.level);
@@ -798,11 +1009,29 @@ function processOfflineProgress() {
             gameState.resources.chickens += newChickens;
         }
         
-        if (newEggs > 0 || newChickens > 0) {
+        if (offlineHours >= 0.1) { // 至少离开0.1小时才显示提示
+            showOfflineReturnModal(offlineHours, newEggs, newChickens);
+        } else if (newEggs > 0 || newChickens > 0) {
             showToast(`离线收益：获得 ${newEggs} 个鸡蛋，孵化 ${newChickens} 只小鸡！`);
         }
         
         renderChickens();
+    }
+}
+
+// 显示离线回归系统提示
+function showOfflineReturnModal(hours, eggs, chickens) {
+    if (elements.offlineReturnModal && elements.offlineReturnContent) {
+        const message = `欢迎主人回到牧场！你已离开了${hours.toFixed(1)}个小时，你不在的时间里，牧场的鸡一共下了${eggs}枚蛋，牧场的鸡蛋孵出了${chickens}只小鸡！快去看看吧！`;
+        elements.offlineReturnContent.innerHTML = `<p>${message}</p>`;
+        elements.offlineReturnModal.classList.remove('hidden');
+    }
+}
+
+// 关闭离线回归系统提示
+function closeOfflineReturnModal() {
+    if (elements.offlineReturnModal) {
+        elements.offlineReturnModal.classList.add('hidden');
     }
 }
 
@@ -814,6 +1043,43 @@ function showToast(message) {
     setTimeout(() => {
         elements.toast.classList.add('hidden');
     }, 2000);
+}
+
+// 添加日志条目
+function addLogEntry(source, message, type = 'action') {
+    if (!elements.logContent) return;
+    
+    const logEntry = document.createElement('div');
+    logEntry.className = `log-entry ${type}`;
+    
+    const timestamp = new Date().toLocaleTimeString();
+    logEntry.innerHTML = `
+        <div class="log-time">${timestamp}</div>
+        <div class="log-source">${source}</div>
+        <div class="log-message">${message}</div>
+    `;
+    
+    elements.logContent.appendChild(logEntry);
+    
+    // 自动滚动到底部
+    elements.logContent.scrollTop = elements.logContent.scrollHeight;
+    
+    // 限制最大显示数量
+    const maxLogEntries = 20;
+    const logEntries = elements.logContent.querySelectorAll('.log-entry');
+    if (logEntries.length > maxLogEntries) {
+        elements.logContent.removeChild(logEntries[0]);
+    }
+}
+
+// 清空日志
+function clearLog() {
+    if (elements.logContent) {
+        if (confirm('确定要清空所有日志吗？')) {
+            elements.logContent.innerHTML = '';
+            addLogEntry('系统', '日志已清空', 'system');
+        }
+    }
 }
 
 // 播放音效 (使用Web Audio API)
@@ -928,8 +1194,6 @@ function closeScanModal() {
 function resetScan() {
     currentScanCode = '';
     elements.scanLoading.classList.add('hidden');
-    elements.filePreview.innerHTML = '';
-    elements.qrFileInput.value = '';
     elements.manualCodeInput.value = '';
     elements.manualCodeInput.classList.remove('valid', 'invalid');
     stopCamera();
@@ -952,7 +1216,7 @@ async function startCameraScan() {
         }, 500);
         
     } catch (error) {
-        showToast('无法访问摄像头，请使用图片扫描方式');
+        showToast('无法访问摄像头，请使用手动输入方式');
         console.error('Camera error:', error);
     }
 }
@@ -1001,49 +1265,7 @@ function scanFromCamera() {
     }
 }
 
-// 处理文件扫描
-function handleFileScan(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-            elements.filePreview.innerHTML = '';
-            elements.filePreview.appendChild(img);
-            
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx.drawImage(img, 0, 0);
-            
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, canvas.width, canvas.height);
-            
-            if (code && code.data) {
-                const scannedCode = code.data.trim();
-                if (/^\d{6}$/.test(scannedCode)) {
-                    currentScanCode = scannedCode;
-                    // 自动填充到验证码输入窗口
-                    elements.manualCodeInput.value = scannedCode;
-                    // 添加视觉反馈
-                    elements.manualCodeInput.classList.add('valid');
-                    playSound('success');
-                    // 显示成功提示
-                    showToast('二维码识别成功！');
-                } else {
-                    showToast('二维码内容必须是6位数字');
-                }
-            } else {
-                showToast('未能识别二维码，请尝试其他图片');
-            }
-        };
-        img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
-}
+
 
 // 显示扫描结果 - 已废弃，现在直接填充到输入框
 function showScanResult(code) {
@@ -1216,9 +1438,8 @@ async function processReward(code) {
     updateUI();
     saveGame();
     
-    setTimeout(() => {
-        closeScanModal();
-    }, 2000);
+    // 立即返回主页面
+    closeScanModal();
     
     return true;
 }
