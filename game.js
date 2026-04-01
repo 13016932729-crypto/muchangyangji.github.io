@@ -61,7 +61,11 @@ let gameState = {
         clicks: 0,
         required: 100
     },
-    lastSaveTime: Date.now()
+    lastSaveTime: Date.now(),
+    ui: {
+        statusPanelCollapsed: false,
+        logCollapsed: false
+    }
 };
 
 // DOM元素
@@ -77,6 +81,10 @@ const elements = {
     ranchLevel: document.getElementById('ranch-level'),
     ranchRating: document.getElementById('ranch-rating'),
     goldDisplay: document.getElementById('gold'),
+    // 状态面板收起/展开相关元素
+    statusPanel: document.getElementById('status-panel'),
+    collapseBtn: document.getElementById('collapse-btn'),
+    avatarCollapsed: document.getElementById('avatar-collapsed'),
 
     coopStructure: document.getElementById('coop-structure'),
     chickensContainer: document.getElementById('chickens-container'),
@@ -126,7 +134,11 @@ const elements = {
     // 日志记录相关元素
     logContainer: document.getElementById('log-container'),
     logContent: document.getElementById('log-content'),
+    logHeader: document.getElementById('log-header'),
     clearLogBtn: document.getElementById('clear-log-btn'),
+    collapseLogBtn: document.getElementById('collapse-log-btn'),
+    logIconCollapsed: document.getElementById('log-icon-collapsed'),
+    logBadge: document.getElementById('log-badge'),
     // 孵化进度相关元素
     hatchProgressFill: document.getElementById('hatch-progress-fill'),
     hatchProgressText: document.getElementById('hatch-progress-text')
@@ -265,20 +277,15 @@ function setupEventListeners() {
     if (elements.clearLogBtn) {
         elements.clearLogBtn.addEventListener('click', clearLog);
     }
-    
+
     // 日志容器折叠/展开功能
-    if (elements.logContainer) {
-        const logHeader = elements.logContainer.querySelector('.log-header');
-        if (logHeader) {
-            logHeader.addEventListener('click', () => {
-                elements.logContainer.classList.toggle('collapsed');
-            });
-        }
-    }
+    initLogToggle();
     
     // 添加初始日志
     addLogEntry('系统', '欢迎来到牧场养鸡大亨！', 'system');
-    
+
+    // 初始化状态面板收起/展开功能
+    initStatusPanelToggle();
 
 }
 
@@ -387,6 +394,7 @@ function startGame() {
     
     gameState.user.nickname = nickname;
     saveGame();
+    addLogEntry('注册', `用户 ${nickname} 注册成功，开始游戏！`, 'action');
     showGameScreen();
 }
 
@@ -410,14 +418,87 @@ function showGameScreen() {
         ctx.textBaseline = 'middle';
         ctx.fillText(gameState.user.avatar, 50, 55);
         elements.userAvatar.src = canvas.toDataURL();
+        // 同时更新收起的圆形头像
+        if (elements.avatarCollapsed) {
+            elements.avatarCollapsed.textContent = gameState.user.avatar;
+        }
     } else {
         elements.userAvatar.src = gameState.user.avatar;
+        if (elements.avatarCollapsed) {
+            elements.avatarCollapsed.textContent = '👤';
+        }
     }
     elements.userName.textContent = gameState.user.nickname;
+
+    // 恢复状态面板的收起/展开状态
+    restoreStatusPanelState();
 
     updateUI();
     renderChickens();
     updateEnvironment();
+}
+
+// 初始化状态面板收起/展开功能
+function initStatusPanelToggle() {
+    if (!elements.statusPanel || !elements.collapseBtn || !elements.avatarCollapsed) return;
+
+    // 收起按钮点击事件
+    elements.collapseBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleStatusPanel(true);
+    });
+
+    // 圆形头像点击展开事件
+    elements.avatarCollapsed.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleStatusPanel(false);
+    });
+
+    // 恢复之前保存的状态
+    restoreStatusPanelState();
+}
+
+// 切换状态面板收起/展开
+function toggleStatusPanel(collapse) {
+    if (!elements.statusPanel) return;
+
+    gameState.ui.statusPanelCollapsed = collapse;
+
+    if (collapse) {
+        elements.statusPanel.classList.add('collapsed');
+        if (elements.collapseBtn) {
+            elements.collapseBtn.style.display = 'none';
+        }
+    } else {
+        elements.statusPanel.classList.remove('collapsed');
+        if (elements.collapseBtn) {
+            elements.collapseBtn.style.display = 'flex';
+        }
+    }
+
+    saveGame();
+}
+
+// 恢复状态面板状态
+function restoreStatusPanelState() {
+    if (!elements.statusPanel) return;
+
+    // 确保ui状态对象存在
+    if (!gameState.ui) {
+        gameState.ui = { statusPanelCollapsed: false, logCollapsed: false };
+    }
+
+    if (gameState.ui.statusPanelCollapsed) {
+        elements.statusPanel.classList.add('collapsed');
+        if (elements.collapseBtn) {
+            elements.collapseBtn.style.display = 'none';
+        }
+    } else {
+        elements.statusPanel.classList.remove('collapsed');
+        if (elements.collapseBtn) {
+            elements.collapseBtn.style.display = 'flex';
+        }
+    }
 }
 
 // 获取牧场评级信息
@@ -699,7 +780,9 @@ function confirmTrade() {
                 gameState.resources.chickens + quantity <= capacity.chickens) {
                 gameState.resources.gold -= chickenCost;
                 gameState.resources.chickens += quantity;
-                showToast(`成功购买 ${quantity} 只鸡！`);
+                const message = `成功购买 ${quantity} 只鸡，花费 ${chickenCost} 金币！`;
+                showToast(message);
+                addLogEntry('购买', message, 'action');
                 playSound('buy');
             }
             break;
@@ -709,9 +792,10 @@ function confirmTrade() {
                 gameState.resources.feed + quantity <= capacity.feed) {
                 gameState.resources.gold -= feedCost;
                 gameState.resources.feed += quantity;
-                showToast(`成功购买 ${quantity} 袋饲料！`);
+                const message = `成功购买 ${quantity} 袋饲料，花费 ${feedCost} 金币！`;
+                showToast(message);
+                addLogEntry('购买', message, 'action');
                 playSound('buy');
-                addLogEntry('系统', `成功购买 ${quantity} 袋饲料！`, 'action');
             }
             break;
         case 'sellChicken':
@@ -719,7 +803,9 @@ function confirmTrade() {
                 const chickenRevenue = quantity * CONFIG.PRICES.SELL_CHICKEN;
                 gameState.resources.chickens -= quantity;
                 gameState.resources.gold += chickenRevenue;
-                showToast(`成功出售 ${quantity} 只鸡，获得 ${chickenRevenue} 金币！`);
+                const message = `成功出售 ${quantity} 只鸡，获得 ${chickenRevenue} 金币！`;
+                showToast(message);
+                addLogEntry('出售', message, 'action');
                 playSound('sell');
             }
             break;
@@ -728,7 +814,9 @@ function confirmTrade() {
                 const eggRevenue = quantity * CONFIG.PRICES.SELL_EGG;
                 gameState.resources.eggs -= quantity;
                 gameState.resources.gold += eggRevenue;
-                showToast(`成功出售 ${quantity} 个鸡蛋，获得 ${eggRevenue} 金币！`);
+                const message = `成功出售 ${quantity} 个鸡蛋，获得 ${eggRevenue} 金币！`;
+                showToast(message);
+                addLogEntry('出售', message, 'action');
                 playSound('sell');
             }
             break;
@@ -754,6 +842,7 @@ function upgradeRanch() {
         return;
     }
     
+    const oldLevel = gameState.ranch.level;
     gameState.resources.gold -= cost;
     gameState.ranch.level++;
     
@@ -764,7 +853,9 @@ function upgradeRanch() {
     // 更新手动孵化所需点击数
     gameState.manualHatch.required = 101 - gameState.ranch.level;
     
-    showToast(`恭喜！牧场升级到等级 ${gameState.ranch.level} - ${ratingInfo.name}！`);
+    const message = `恭喜！牧场升级到等级 ${gameState.ranch.level} - ${ratingInfo.name}！花费 ${cost} 金币`;
+    showToast(message);
+    addLogEntry('升级', message, 'action');
     playSound('upgrade');
     
     updateUI();
@@ -810,9 +901,10 @@ function handleManualHatch() {
             elements.coopStructure.classList.remove('hatch-success');
         }, 1000);
         
-        showToast('恭喜！成功孵化一只小鸡！');
+        const message = '恭喜！成功孵化一只小鸡！';
+        showToast(message);
+        addLogEntry('手动孵化', message, 'action');
         playSound('hatch');
-        addLogEntry('系统', '成功孵化一只小鸡！', 'action');
         
         // 每孵化出10只鸡时，显示小鸡形象从鸡舍移动至中间空地的动画效果
         if (gameState.resources.chickens % 10 === 0) {
@@ -959,7 +1051,9 @@ function processGameTick() {
         if (chickensHatched > 0) {
             message += `孵化 ${chickensHatched} 只小鸡`;
         }
-        showToast(`🎉 ${message}！`);
+        const fullMessage = `🎉 ${message}！`;
+        showToast(fullMessage);
+        addLogEntry('自动产出', fullMessage, 'system');
     }
     
     updateUI();
@@ -971,51 +1065,87 @@ function processOfflineProgress() {
     const now = Date.now();
     const offlineTime = roundToThreeDecimals((now - gameState.lastSaveTime) / 1000 / 60); // 分钟
     const offlineHours = roundToThreeDecimals(offlineTime / 60); // 小时
-    
+
     if (offlineTime > 1 && gameState.lastSaveTime > 0) {
         const capacity = getCapacity(gameState.ranch.level);
         const ratingInfo = getRanchRatingInfo(gameState.ranch.level);
         const ratingIndex = ratingInfo.level - 1;
-        
+
+        // 检查离线期间饲料是否充足
+        const feedConsumptionPerMinute = roundToThreeDecimals(gameState.resources.chickens * 0.5);
+        const totalFeedNeeded = roundToThreeDecimals(feedConsumptionPerMinute * offlineTime);
+
+        let effectiveOfflineTime = offlineTime;
+        let feedRanOut = false;
+
+        // 如果饲料不足以支撑整个离线时间，计算饲料耗尽的时间点
+        if (gameState.resources.feed < totalFeedNeeded) {
+            if (gameState.resources.feed <= 0) {
+                effectiveOfflineTime = 0;
+            } else {
+                effectiveOfflineTime = roundToThreeDecimals(gameState.resources.feed / feedConsumptionPerMinute);
+            }
+            feedRanOut = true;
+        }
+
         // 离线饲料消耗 (正常速率) - 计算时保留三位有效数字
-        const feedConsumption = roundToThreeDecimals(gameState.resources.chickens * 0.5 * offlineTime);
-        gameState.resources.feed = roundToThreeDecimals(Math.max(0, gameState.resources.feed - feedConsumption));
-        
-        // 离线产蛋 (10%速率) - 计算时保留三位有效数字
-        const eggRate = roundToThreeDecimals(CONFIG.PRODUCTION_RATES.EGG[ratingIndex] * 0.1);
-        const eggProduction = roundToThreeDecimals(gameState.resources.chickens * eggRate * offlineTime);
-        const newEggs = Math.min(Math.floor(eggProduction), capacity.eggs - gameState.resources.eggs);
-        
-        if (newEggs > 0) {
-            gameState.resources.eggs += newEggs;
+        const actualFeedConsumption = roundToThreeDecimals(feedConsumptionPerMinute * Math.min(offlineTime, effectiveOfflineTime));
+        gameState.resources.feed = roundToThreeDecimals(Math.max(0, gameState.resources.feed - actualFeedConsumption));
+
+        let newEggs = 0;
+        let newChickens = 0;
+
+        // 只有在饲料充足的时间段内才进行产出计算
+        if (effectiveOfflineTime > 0) {
+            // 离线产蛋 (10%速率) - 计算时保留三位有效数字
+            const eggRate = roundToThreeDecimals(CONFIG.PRODUCTION_RATES.EGG[ratingIndex] * 0.1);
+            const eggProduction = roundToThreeDecimals(gameState.resources.chickens * eggRate * effectiveOfflineTime);
+            newEggs = Math.min(Math.floor(eggProduction), capacity.eggs - gameState.resources.eggs);
+
+            if (newEggs > 0) {
+                gameState.resources.eggs += newEggs;
+            }
+
+            // 离线孵化 (10%速率) - 计算时保留三位有效数字
+            // 注意：孵化基于离线开始时的鸡蛋数量 + 新产出的鸡蛋
+            const hatchRate = roundToThreeDecimals(CONFIG.PRODUCTION_RATES.HATCH[ratingIndex] * 0.1);
+            const hatchProduction = roundToThreeDecimals(gameState.resources.eggs * hatchRate * effectiveOfflineTime);
+            newChickens = Math.min(Math.floor(hatchProduction), capacity.chickens - gameState.resources.chickens);
+
+            if (newChickens > 0) {
+                gameState.resources.eggs -= newChickens;
+                gameState.resources.chickens += newChickens;
+            }
         }
-        
-        // 离线孵化 (10%速率) - 计算时保留三位有效数字
-        const hatchRate = roundToThreeDecimals(CONFIG.PRODUCTION_RATES.HATCH[ratingIndex] * 0.1);
-        const hatchProduction = roundToThreeDecimals(gameState.resources.eggs * hatchRate * offlineTime);
-        const newChickens = Math.min(Math.floor(hatchProduction), capacity.chickens - gameState.resources.chickens);
-        
-        if (newChickens > 0) {
-            gameState.resources.eggs -= newChickens;
-            gameState.resources.chickens += newChickens;
-        }
-        
+
         if (offlineHours >= 0.1) { // 至少离开0.1小时才显示提示
-            showOfflineReturnModal(offlineHours, newEggs, newChickens);
+            showOfflineReturnModal(offlineHours, newEggs, newChickens, feedRanOut);
         } else if (newEggs > 0 || newChickens > 0) {
             showToast(`离线收益：获得 ${newEggs} 个鸡蛋，孵化 ${newChickens} 只小鸡！`);
         }
-        
+
         renderChickens();
     }
 }
 
 // 显示离线回归系统提示
-function showOfflineReturnModal(hours, eggs, chickens) {
+function showOfflineReturnModal(hours, eggs, chickens, feedRanOut = false) {
     if (elements.offlineReturnModal && elements.offlineReturnContent) {
-        const message = `欢迎主人回到牧场！你已离开了${hours.toFixed(1)}个小时，你不在的时间里，牧场的鸡一共下了${eggs}枚蛋，牧场的鸡蛋孵出了${chickens}只小鸡！快去看看吧！`;
+        let message = `欢迎主人回到牧场！你已离开了${hours.toFixed(1)}个小时，你不在的时间里，牧场的鸡一共下了${eggs}枚蛋，牧场的鸡蛋孵出了${chickens}只小鸡！快去看看吧！`;
+
+        if (feedRanOut) {
+            message += `<p style="color: #ff6b6b; margin-top: 10px; font-size: 14px;">⚠️ 注意：离线期间饲料已耗尽，后续时间无法继续产出。</p>`;
+        }
+
         elements.offlineReturnContent.innerHTML = `<p>${message}</p>`;
         elements.offlineReturnModal.classList.remove('hidden');
+        
+        // 记录到系统日志
+        let logMessage = `离线回归：离开${hours.toFixed(1)}小时，获得${eggs}枚蛋，孵化${chickens}只小鸡`;
+        if (feedRanOut) {
+            logMessage += '（离线期间饲料已耗尽）';
+        }
+        addLogEntry('离线回归', logMessage, 'system');
     }
 }
 
@@ -1027,39 +1157,123 @@ function closeOfflineReturnModal() {
 }
 
 // 显示提示消息
-function showToast(message) {
+function showToast(message, logToSystem = false) {
     elements.toast.textContent = message;
     elements.toast.classList.remove('hidden');
+    
+    // 根据参数决定是否记录到系统日志
+    if (logToSystem) {
+        addLogEntry('系统提示', message, 'system');
+    }
     
     setTimeout(() => {
         elements.toast.classList.add('hidden');
     }, 2000);
 }
 
+// 未读日志计数
+let unreadLogCount = 0;
+
+// 初始化日志收起/展开功能
+function initLogToggle() {
+    if (!elements.logContainer) return;
+
+    // 收起按钮点击事件
+    if (elements.collapseLogBtn) {
+        elements.collapseLogBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleLogPanel(true);
+        });
+    }
+
+    // 圆形图标点击展开事件
+    if (elements.logIconCollapsed) {
+        elements.logIconCollapsed.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleLogPanel(false);
+        });
+    }
+
+    // 恢复之前保存的状态
+    restoreLogState();
+}
+
+// 切换日志面板收起/展开
+function toggleLogPanel(collapse) {
+    if (!elements.logContainer) return;
+
+    gameState.ui.logCollapsed = collapse;
+
+    if (collapse) {
+        elements.logContainer.classList.add('collapsed');
+    } else {
+        elements.logContainer.classList.remove('collapsed');
+        // 展开时重置未读计数
+        unreadLogCount = 0;
+        updateLogBadge();
+    }
+
+    saveGame();
+}
+
+// 恢复日志状态
+function restoreLogState() {
+    if (!elements.logContainer) return;
+
+    // 确保ui状态对象存在
+    if (!gameState.ui) {
+        gameState.ui = { statusPanelCollapsed: false, logCollapsed: false };
+    }
+
+    if (gameState.ui.logCollapsed) {
+        elements.logContainer.classList.add('collapsed');
+    } else {
+        elements.logContainer.classList.remove('collapsed');
+    }
+}
+
+// 更新日志角标
+function updateLogBadge() {
+    if (!elements.logBadge) return;
+
+    if (unreadLogCount > 0) {
+        elements.logBadge.textContent = unreadLogCount > 99 ? '99+' : unreadLogCount;
+        elements.logBadge.classList.remove('hidden');
+    } else {
+        elements.logBadge.classList.add('hidden');
+    }
+}
+
 // 添加日志条目
 function addLogEntry(source, message, type = 'action') {
     if (!elements.logContent) return;
-    
+
     const logEntry = document.createElement('div');
     logEntry.className = `log-entry ${type}`;
-    
+
     const timestamp = new Date().toLocaleTimeString();
     logEntry.innerHTML = `
         <div class="log-time">${timestamp}</div>
         <div class="log-source">${source}</div>
         <div class="log-message">${message}</div>
     `;
-    
+
     elements.logContent.appendChild(logEntry);
-    
+
     // 自动滚动到底部
     elements.logContent.scrollTop = elements.logContent.scrollHeight;
-    
+
     // 限制最大显示数量
     const maxLogEntries = 20;
     const logEntries = elements.logContent.querySelectorAll('.log-entry');
     if (logEntries.length > maxLogEntries) {
         elements.logContent.removeChild(logEntries[0]);
+    }
+
+    // 如果日志处于收起状态，增加未读计数
+    if (gameState.ui && gameState.ui.logCollapsed) {
+        unreadLogCount++;
+        updateLogBadge();
     }
 }
 
@@ -1423,7 +1637,9 @@ async function processReward(code) {
     localStorage.setItem('used_yanzhengma', JSON.stringify(usedCodes));
     
     elements.scanLoading.classList.add('hidden');
-    showToast(`🎉 验证成功！获得 ${eggsToAdd} 个鸡蛋！`);
+    const message = `🎉 验证成功！获得 ${eggsToAdd} 个鸡蛋！`;
+    showToast(message);
+    addLogEntry('扫码奖励', message, 'action');
     playSound('reward');
     
     updateUI();
@@ -1549,6 +1765,8 @@ function handleLogout() {
         return;
     }
     
+    const nickname = gameState.user.nickname;
+    
     // 清除所有游戏数据
     localStorage.removeItem('ranchChickenGame');
     localStorage.removeItem('yanzhengma_content');
@@ -1567,6 +1785,7 @@ function handleLogout() {
     gameState.manualHatch.clicks = 0;
     gameState.manualHatch.required = 100;
     gameState.lastSaveTime = Date.now();
+    gameState.ui = { statusPanelCollapsed: false, logCollapsed: false };
     
     // 重置界面
     elements.avatarPreview.innerHTML = '<span>点击上传头像</span>';
@@ -1574,7 +1793,9 @@ function handleLogout() {
     
     // 显示成功提示
     closeLogoutModal();
-    showToast('✅ 注销成功！');
+    const message = '✅ 注销成功！';
+    showToast(message);
+    addLogEntry('注销', `用户 ${nickname} 注销账号，清除所有数据`, 'action');
     playSound('success');
     
     // 返回注册界面

@@ -309,9 +309,93 @@ body {
     padding: 15px;
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-    z-index: 100;
+    z-index: 150;
     min-width: 280px;
     max-width: 350px;
+    transition: all 0.3s ease;
+    overflow: visible;
+}
+
+/* 状态面板收起状态 */
+.status-panel.collapsed {
+    min-width: auto;
+    max-width: none;
+    width: auto;
+    padding: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.status-panel.collapsed .panel-header {
+    display: none;
+}
+
+.status-panel.collapsed .stats {
+    display: none;
+}
+
+/* 收起后的圆形头像按钮 */
+.status-panel.collapsed::before {
+    content: '';
+    display: none;
+}
+
+.status-panel .collapse-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: 2px solid white;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    z-index: 101;
+}
+
+.status-panel .collapse-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* 收起后的圆形头像容器 */
+.status-panel.collapsed .avatar-collapsed {
+    display: flex;
+}
+
+.avatar-collapsed {
+    display: none;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fff9e6, #fff3cd);
+    border: 3px solid white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    transition: all 0.3s ease;
+    animation: avatarPulse 2s ease-in-out infinite;
+    z-index: 151;
+}
+
+.avatar-collapsed:hover {
+    transform: scale(1.2);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+    z-index: 250;
+}
+
+@keyframes avatarPulse {
+    0%, 100% { box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    50% { box-shadow: 0 6px 25px rgba(102, 126, 234, 0.4); }
 }
 
 /* 面板头部 - 整合用户信息和功能按钮 */
@@ -1223,26 +1307,54 @@ body {
     margin-top: 20px;
 }
 
-/* 提示消息 */
+/* 提示消息 - 固定在屏幕底部 */
 .toast {
     position: fixed;
-    top: 50%;
+    bottom: 100px;
     left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.8);
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.85);
     color: white;
-    padding: 15px 30px;
-    border-radius: 10px;
-    font-size: 16px;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 14px;
     z-index: 2000;
-    animation: fadeInOut 2s ease;
+    animation: toastSlideUp 2.5s ease forwards;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    max-width: 90%;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-    20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+@keyframes toastSlideUp {
+    0% { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(20px) scale(0.9); 
+    }
+    15% { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0) scale(1); 
+    }
+    85% { 
+        opacity: 1; 
+        transform: translateX(-50%) translateY(0) scale(1); 
+    }
+    100% { 
+        opacity: 0; 
+        transform: translateX(-50%) translateY(-10px) scale(0.95); 
+    }
+}
+
+/* 响应式提示消息 */
+@media (max-width: 768px) {
+    .toast {
+        bottom: 90px;
+        padding: 10px 20px;
+        font-size: 13px;
+        max-width: 95%;
+    }
 }
 
 /* 响应式设计 */
@@ -2037,29 +2149,97 @@ body {
 /* 主界面日志记录显示 */
 .log-container {
     position: fixed;
-    bottom: 100px;
+    bottom: 120px;
     left: 20px;
     width: 300px;
-    max-height: 300px;
+    max-height: 250px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-    z-index: 90;
+    z-index: 200;
     overflow: hidden;
     transition: all 0.3s ease;
 }
 
+/* 日志收起状态 - 显示为左下角圆形图标 */
 .log-container.collapsed {
     width: auto;
-    max-height: 50px;
+    max-height: none;
+    background: transparent;
+    box-shadow: none;
+    bottom: 120px;
+    left: 20px;
+    right: auto;
+    z-index: 400;
+    overflow: visible;
+}
+
+.log-container.collapsed .log-header {
+    display: none;
 }
 
 .log-container.collapsed .log-content {
     display: none;
 }
 
-.log-container.collapsed .clear-log-btn {
+/* 圆形图标按钮（收起状态） */
+.log-icon-collapsed {
     display: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: 3px solid white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: all 0.3s ease;
+    animation: logIconPulse 2s ease-in-out infinite;
+    z-index: 201;
+}
+
+.log-container.collapsed .log-icon-collapsed {
+    display: flex;
+}
+
+.log-icon-collapsed:hover {
+    transform: scale(1.2);
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.6);
+    z-index: 300;
+}
+
+.log-icon-collapsed .log-icon {
+    font-size: 24px;
+}
+
+/* 日志消息角标 */
+.log-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #ff4757;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.log-badge.hidden {
+    display: none;
+}
+
+@keyframes logIconPulse {
+    0%, 100% { box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); }
+    50% { box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5); }
 }
 
 .log-header {
@@ -2070,7 +2250,6 @@ body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     font-weight: bold;
-    cursor: pointer;
 }
 
 .log-header:hover {
@@ -2080,6 +2259,33 @@ body {
 .log-header h4 {
     margin: 0;
     font-size: 14px;
+}
+
+.log-header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.collapse-log-btn {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.collapse-log-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
 }
 
 .clear-log-btn {
@@ -2103,6 +2309,35 @@ body {
     overflow-y: auto;
     font-size: 12px;
     line-height: 1.4;
+    scrollbar-width: thin;
+    scrollbar-color: #667eea rgba(255, 255, 255, 0.5);
+}
+
+.log-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.log-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 4px;
+}
+
+.log-content::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.log-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.log-content::-webkit-scrollbar-thumb:active {
+    background: #5568d3;
+}
+
+.log-content::-webkit-scrollbar-button {
+    display: none;
 }
 
 .log-entry {
@@ -2164,14 +2399,38 @@ body {
 /* 响应式日志样式 */
 @media (max-width: 768px) {
     .log-container {
-        bottom: 80px;
-        right: 10px;
+        bottom: 120px;
         left: 10px;
-        width: auto;
-        max-height: 200px;
+        right: auto;
+        width: calc(100% - 20px);
+        max-height: 180px;
     }
-    
+
+    .log-container.collapsed {
+        bottom: 120px;
+        left: 10px;
+        right: auto;
+        width: auto;
+        z-index: 400;
+        overflow: visible;
+    }
+
     .log-content {
         max-height: 150px;
+    }
+
+    .log-icon-collapsed {
+        width: 45px;
+        height: 45px;
+    }
+
+    .log-icon-collapsed .log-icon {
+        font-size: 20px;
+    }
+
+    .log-badge {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
     }
 }
